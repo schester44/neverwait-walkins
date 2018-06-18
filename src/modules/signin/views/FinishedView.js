@@ -1,4 +1,5 @@
-import React from "react"
+import React, { PureComponent } from "react"
+import { Link } from "react-router-dom"
 import styled from "styled-components"
 import AppHeader from "../../../components/AppHeader"
 
@@ -14,15 +15,15 @@ const Content = styled("div")`
 	width: 80vw;
 	height: 80vh;
 	text-align: center;
-    color: #7b808b;
-    margin-top: 3vh;
+	color: #7b808b;
+	margin-top: 3vh;
 
-    .time {
-        color: white;
-        font-weight: 700;
-    }
-    
-    h1 {
+	.time {
+		color: white;
+		font-weight: 700;
+	}
+
+	h1 {
 		font-size: 80px;
 	}
 
@@ -46,27 +47,46 @@ const Button = styled("button")`
 	color: white;
 `
 
+class Finished extends PureComponent {
+	componentDidMount() {
+		this.timer = window.setTimeout(() => {
+			this.props.history.push('/')
+		}, 15000)
+	}
 
-const Finished = ({ locationId, history }) => {
-	return (
-		<Wrapper>
-			<AppHeader />
+	componentWillUnmount() {
+		if (this.timer) {
+			window.clearTimeout(this.timer)
+		}
+	}
 
-			<Content>
-				<h1>You're all set!</h1>
-                <p style={{ textAlign: 'center' }}>You can expect to be in the chair in about<br /><span className="time">30 minutes.</span></p>
-				
-                <p>
-					IF SUPPLIED NUMBER.. We'll text you 45 minutes before your cut. You should be here 20 minutes prior to your
-					cut. This is not an appointment and we do not wait. If you are late you will need to re-sign in.
-				</p>
+	render() {
+		return (
+			<Wrapper>
+				<AppHeader />
 
-                <p className="pin-cta">Want to check in quicker next time? Create a pin and use it for future checkins.</p>
-                
-                <Button onClick={() => history.push('/')}>Finish</Button>
-			</Content>
-		</Wrapper>
-	)
+				<Content>
+					<h1>You're all set!</h1>
+
+					<p style={{ textAlign: "center" }}>
+						You can expect to be in the chair in about<br />
+						<span className="time">30 minutes.</span>
+					</p>
+
+					{this.props.location.contactNumber && (
+						<p>
+							We'll text you 45 minutes before your cut. You should be here 20 minutes prior to your cut. This is not an
+							appointment and we do not wait. If you are late you will need to re-sign in.
+						</p>
+					)}
+
+					<Link to="/">
+						<Button>Finish</Button>
+					</Link>
+				</Content>
+			</Wrapper>
+		)
+	}
 }
 
 export default Finished

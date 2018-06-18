@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import { BrowserRouter as Router, Switch } from "react-router-dom"
-import isAuthenticated from "./graphql/authenticated"
+
 import { GuestRoute, AuthRoute } from "./components/routes"
 
 import Auth from "./modules/auth/views/AuthView"
@@ -8,53 +8,41 @@ import Home from "./modules/home/views/HomeView"
 import Form from "./modules/signin/views/FormView"
 import Finished from "./modules/signin/views/FinishedView"
 
-import { Query } from "react-apollo"
+import { Subscription } from "react-apollo"
 import gql from "graphql-tag"
 
-const APPOINTMENTS_QUERY = gql`
-	query appointments($locationId: Int!) {
-		appointments(locationId: $locationId) {
-			id
-			startTime
-			customer {
-				firstName
-			}
-			employee {
-				firstName
-			}
+// TODO --- How to have multiple subscriptions? Do I need one for all CRUD operations?
+// Need to update Wait Time & Appointment list.
+
+const BOOKING_SUBSCRIPTION = gql`
+	subscription onAppointmentCreate {
+		appointmentCreated {
+			waitTime
 		}
 	}
 `
 
-const Loading = () => <div style={{ width: "100%", fontSize: 100, height: "100%", background: "red" }}>LOADING</div>
-
 class App extends Component {
-	state = {
-		locationId: null
-	}
-
-	componentDidMount() {}
-
 	render() {
-		const { locationId } = this.state
-
 		return (
-			<Query query={APPOINTMENTS_QUERY} variables={{ locationId }}>
+			<Subscription subscription={BOOKING_SUBSCRIPTION}>
 				{({ loading, data, error }) => {
-					if (loading) return <Loading />
+					if (loading) {
+						return <div />
+					}
 
 					return (
 						<Router>
 							<Switch>
 								<GuestRoute path="/auth" component={Auth} />
 								<AuthRoute exact path="/" component={Home} />
-								<AuthRoute path="/sign-in" render={props => <Form {...props} locationId={locationId} />} />
-								<AuthRoute path="/finished" render={props => <Finished {...props} locationId={locationId} />} />
+								<AuthRoute path="/sign-in" component={Form} />
+								<AuthRoute path="/finished" component={Finished} />
 							</Switch>
 						</Router>
 					)
 				}}
-			</Query>
+			</Subscription>
 		)
 	}
 }

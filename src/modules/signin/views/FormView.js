@@ -120,8 +120,7 @@ class Form extends PureComponent {
 		this.setState({ isReceivingText: checked })
 	}
 
-	handleInputChange = ({ target: { name, value } }) => {
-		console.log(name, value)
+	handleInputChange = ({ target: { name, value } }) => {``
 		this.setState({
 			fields: {
 				...this.state.fields,
@@ -152,7 +151,10 @@ class Form extends PureComponent {
 
 		if (response.data.createAppointment.ok) {
 			// TODO -- Take to next page Confirmation Page with details about when they should be in the chair. Ask them if they want to add a PIN to checkout faster, etc. need response.customer.id to update the customer.
-			this.props.history.push("/finished")
+			this.props.history.push({
+				pathname: "/finished",
+				contactNumber: this.state.fields.contactNumber
+			})
 		}
 	}
 
