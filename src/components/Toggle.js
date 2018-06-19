@@ -8,6 +8,7 @@ const Wrapper = styled("div")`
     .text {
         font-size: 22px;
         margin-left: 15px;
+        opacity: 0.5;
     }
 
 

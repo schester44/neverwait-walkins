@@ -19,7 +19,7 @@ const Wrapper = styled("div")`
         background: rgba(255, 255, 255, 0.2);
         border-radius: 5px;
         width: 100%;
-        padding: 20px 40px;
+        padding: 20px;
         font-weight: 400;
         outline: none;
         color: white;

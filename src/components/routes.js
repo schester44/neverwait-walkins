@@ -2,10 +2,12 @@ import React from "react"
 import { Route, Redirect } from "react-router-dom"
 import { isAuthenticated } from "../graphql/utils"
 
-export const AuthRoute = ({ component: Component, ...rest }) => (
+export const AuthRoute = ({ component: Component, render, ...rest }) => (
 	<Route
 		{...rest}
-		render={props => (isAuthenticated() ? <Component {...props} /> : <Redirect to={{ pathname: "/auth" }} />)}
+		render={props =>
+			isAuthenticated() ? render ? render(props) : <Component {...props} /> : <Redirect to={{ pathname: "/auth" }} />
+		}
 	/>
 )
 

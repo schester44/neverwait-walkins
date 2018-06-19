@@ -7,6 +7,8 @@
     "apollo-client": "^2.3.4",
     "apollo-client-preset": "^1.0.8",
     "apollo-link-error": "^1.1.0",
+    "apollo-link-ws": "^1.0.8",
+    "apollo-utilities": "^1.0.15",
     "date-arithmetic": "^3.1.0",
     "date-fns": "^1.29.0",
     "graphql": "^0.13.2",
@@ -21,7 +23,8 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.4",
     "recompose": "^0.27.1",
-    "styled-components": "^3.3.2"
+    "styled-components": "^3.3.2",
+    "subscriptions-transport-ws": "^0.9.11"
   },
   "scripts": {
     "start": "react-scripts start",

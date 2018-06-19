@@ -6,7 +6,7 @@ const Wrapper = styled("div")`
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	padding: 50px 100px;
+	padding: 20px 20px;
 	width: 100%;
 	opacity: 0.2;
 

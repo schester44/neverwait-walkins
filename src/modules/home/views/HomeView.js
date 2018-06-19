@@ -1,6 +1,7 @@
-import React from "react"
+import React, { PureComponent } from "react"
 import { Link } from "react-router-dom"
 import styled from "styled-components"
+import distanceInWords from "date-fns/distance_in_words"
 
 const Wrapper = styled("div")`
 	display: flex;
@@ -21,6 +22,7 @@ const Wrapper = styled("div")`
 	}
 
 	.inner {
+		width: 90vw;
 		text-align: center;
 	}
 
@@ -35,8 +37,6 @@ const Wrapper = styled("div")`
 		font-size: 22px;
 		color: white;
 		width: 100%;
-
-		
 	}
 
 	.pin {
@@ -48,10 +48,10 @@ const Wrapper = styled("div")`
 
 const Button = styled("div")`
 	margin-top: 15vh;
-	margin-bottom: 7vh;
+	margin-bottom: 15vh;
 
 	font-size: 42px;
-	padding: 50px 300px;
+	padding: 50px 0;
 	background: #473cd1;
 	border-radius: 5px;
 	cursor: pointer;
@@ -69,20 +69,60 @@ const StyledLink = styled(Link)`
 	}
 `
 
-const HomeView = () => {
-	return (
-		<Wrapper>
-			<div className="inner">
-				<h1>Lorenzo's</h1>
+class HomeView extends PureComponent {
+	state = {
+		startTime: 0
+	}
 
-				<StyledLink to="/sign-in">
-					<Button>Sign In Here</Button>
-				</StyledLink>
+	static getDerivedStateFromProps(nextProps, prevState) {
+		// Don't set the waitTime state if theres more than 1 employee.
+		if (nextProps.locationData.employees.length > 1) return null
 
-				<h4>Estimated Wait Time: 1h 30m</h4>
-			</div>
-		</Wrapper>
-	)
+		const appointments = nextProps.locationData.employees[0].appointments
+		const appointment = appointments[appointments.length - 1]
+
+		const startTime = appointment ? appointment.startTime : new Date()
+
+		// TODO: take in consideration the duration of the lastAppointment.
+		// current waitTime is always off between 15-25 minutes due to not including the duration.
+
+		return {
+			startTime,
+			waitTime: distanceInWords(new Date(), startTime)
+		}
+	}
+
+	componentDidMount() {
+		this.timer = window.setInterval(() => {
+			this.setState({ waitTime: distanceInWords(new Date(), this.state.startTime) })
+		}, 60 * 1000)
+	}
+
+	componentWillUnmount() {
+		window.clearInterval(this.timer)
+	}
+
+	render() {
+		const { showWaitTimes, location } = this.props
+		return (
+			<Wrapper>
+				<div className="inner">
+					<h1>Lorenzo's</h1>
+
+					<StyledLink to="/sign-in">
+						<Button>Sign In Here</Button>
+					</StyledLink>
+
+					{showWaitTimes && (
+						<h4>
+							Estimated Wait Time:<br />
+							{this.state.waitTime}
+						</h4>
+					)}
+				</div>
+			</Wrapper>
+		)
+	}
 }
 
 export default HomeView

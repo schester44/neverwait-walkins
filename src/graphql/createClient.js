@@ -3,7 +3,9 @@ import { InMemoryCache } from "apollo-cache-inmemory"
 import { onError } from "apollo-link-error"
 
 import { HttpLink } from "apollo-link-http"
-import { ApolloLink } from "apollo-link"
+import { WebSocketLink } from "apollo-link-ws"
+import { ApolloLink, split } from "apollo-link"
+import { getMainDefinition } from "apollo-utilities"
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	console.log({ graphQLErrors, networkError })
@@ -38,13 +40,33 @@ const AuthLink = new ApolloLink((operation, forward) => {
 	})
 })
 
-const link = ApolloLink.from([
+const wsLink = new WebSocketLink({
+	uri: `ws://localhost:3443/subscriptions`,
+	options: {
+		reconnect: true,
+		connectionParams: {
+			token: localStorage.getItem("AuthToken"),
+		},
+	}
+})
+
+const httpLink = ApolloLink.from([
 	onErrorLink,
 	AuthLink,
 	new HttpLink({
 		uri: "http://localhost:3443/api"
 	})
 ])
+	
+
+const link = split(
+	({ query }) => {
+		const { kind, operation } = getMainDefinition(query)
+		return kind === "OperationDefinition" && operation === "subscription"
+	},
+	wsLink,
+	httpLink
+)
 
 const cache = new InMemoryCache()
 

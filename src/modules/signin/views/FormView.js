@@ -1,13 +1,14 @@
 import React, { PureComponent } from "react"
 import styled, { keyframes } from "styled-components"
 import { compose } from "recompose"
-import Toggle from "../../../components/Toggle"
-import AppHeader from "../../../components/AppHeader"
-
+import gql from "graphql-tag"
 import { withApollo } from "react-apollo"
 
-import gql from "graphql-tag"
+import format from "date-fns/format"
+import distanceInWordsToNow from "date-fns/distance_in_words_to_now"
 
+import Toggle from "../../../components/Toggle"
+import AppHeader from "../../../components/AppHeader"
 import Input from "../../../components/Input"
 import Button from "../../../components/Button"
 
@@ -32,13 +33,12 @@ const Wrapper = styled("div")`
 `
 
 const Content = styled("div")`
-	width: 80vw;
-	height: 80vh;
+	width: 90vw;
+	height: 63vh;
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
 	text-align: center;
-	margin-top: 10vh;
+	margin-top: 5vh;
 
 	.phone-number {
 		width: 100%;
@@ -46,11 +46,6 @@ const Content = styled("div")`
 		flex-direction: column;
 		align-items: center;
 		margin-top: 25px;
-
-		.form-input {
-			width: 100%;
-			margin-top: 25px;
-		}
 
 		.instructions {
 			margin-top: 10px;
@@ -65,6 +60,14 @@ const Content = styled("div")`
 	}
 `
 
+const PhoneInput = styled("div")`
+	position: relative;
+	width: 100%;
+	opacity: 0;
+	margin-top: 15px;
+	animation: ${fadeIn} 0.5s ease forwards;
+`
+
 const styles = {
 	inputWrapper: {
 		width: "45%"
@@ -75,20 +78,13 @@ const styles = {
 	button: { marginTop: "5vh", marginBottom: "15vh" }
 }
 
-
-const PhoneInput = styled("div")`
-	position: relative;
-	width: 100%;
-	opacity: 0;
-	animation: ${fadeIn} 0.5s ease forwards;
-`
-
 const CREATE_APPOINTMENT_MUTATION = gql`
 	mutation CreateAppointment($input: AppointmentInput!) {
 		createAppointment(input: $input) {
 			ok
 			appointment {
 				id
+				startTime
 			}
 			customer {
 				totalBookings
@@ -120,7 +116,7 @@ class Form extends PureComponent {
 		this.setState({ isReceivingText: checked })
 	}
 
-	handleInputChange = ({ target: { name, value } }) => {``
+	handleInputChange = ({ target: { name, value } }) => {		
 		this.setState({
 			fields: {
 				...this.state.fields,
@@ -128,14 +124,16 @@ class Form extends PureComponent {
 			}
 		})
 	}
+	
 
 	handleSubmit = async () => {
 		this.setState({ isSubmitting: true })
 
-		const startTime = Math.round(+new Date() / 1000)
+		const checkInTime = format(new Date(), "YYYY-MM-DD HH:mm:ss")
 
+		// TODO: Remove hard coded userID
 		const variables = {
-			input: { ...this.state.fields, startTime, checkInTime: startTime, userId: 1, locationId: this.props.locationId }
+			input: { ...this.state.fields, checkInTime, userId: 1, locationId: this.props.locationId }
 		}
 
 		const response = await this.props.client
@@ -150,10 +148,13 @@ class Form extends PureComponent {
 		this.setState({ isSubmitting: false })
 
 		if (response.data.createAppointment.ok) {
+			const { appointment: { id, startTime } } = response.data.createAppointment
+console.log(id);
 			// TODO -- Take to next page Confirmation Page with details about when they should be in the chair. Ask them if they want to add a PIN to checkout faster, etc. need response.customer.id to update the customer.
 			this.props.history.push({
 				pathname: "/finished",
-				contactNumber: this.state.fields.contactNumber
+				contactNumber: this.state.fields.contactNumber,
+				distance: distanceInWordsToNow(startTime)
 			})
 		}
 	}
@@ -178,6 +179,7 @@ class Form extends PureComponent {
 						<div className="toggle-prompt">
 							<Toggle textAlign="right" onChange={this.handleTextToggle} text="Receive a text when its your turn?" />
 						</div>
+
 
 						{this.state.isReceivingText && (
 							<PhoneInput>

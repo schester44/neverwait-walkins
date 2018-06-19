@@ -89,6 +89,8 @@ class AuthView extends PureComponent {
 		}
 
 		localStorage.setItem("AuthToken", response.data.AuthWithToken.token)
+		
+		this.props.client.resetStore()
 		this.props.history.push('/')
 	}
 

@@ -12,7 +12,7 @@ const Wrapper = styled("div")`
 `
 
 const Content = styled("div")`
-	width: 80vw;
+	width: 90vw;
 	height: 80vh;
 	text-align: center;
 	color: #7b808b;
@@ -37,10 +37,10 @@ const Content = styled("div")`
 
 const Button = styled("button")`
 	margin-top: 5vh;
-
+	width: 100%;
 	border: 0;
 	font-size: 42px;
-	padding: 50px 300px;
+	padding: 50px 0;
 	background: #473cd1;
 	border-radius: 5px;
 	cursor: pointer;
@@ -50,7 +50,7 @@ const Button = styled("button")`
 class Finished extends PureComponent {
 	componentDidMount() {
 		this.timer = window.setTimeout(() => {
-			this.props.history.push('/')
+			this.props.history.push("/")
 		}, 15000)
 	}
 
@@ -69,8 +69,8 @@ class Finished extends PureComponent {
 					<h1>You're all set!</h1>
 
 					<p style={{ textAlign: "center" }}>
-						You can expect to be in the chair in about<br />
-						<span className="time">30 minutes.</span>
+						You can expect to be in the chair in <br />
+						<span className="time">{this.props.location.distance}</span>
 					</p>
 
 					{this.props.location.contactNumber && (
