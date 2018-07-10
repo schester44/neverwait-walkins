@@ -6,6 +6,7 @@ import { withApollo } from "react-apollo"
 import AppHeader from "../../../components/AppHeader"
 import Input from "../../../components/Input"
 import Button from "../../../components/Button"
+import { AUTH_TOKEN_KEY } from "../../../constants";
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -88,10 +89,8 @@ class AuthView extends PureComponent {
 			return this.setState({ errors: response.data.AuthWithToken.errors })
 		}
 
-		localStorage.setItem("AuthToken", response.data.AuthWithToken.token)
-		
-		this.props.client.resetStore()
-		this.props.history.push('/')
+		localStorage.setItem(AUTH_TOKEN_KEY, response.data.AuthWithToken.token)
+		window.location.reload()
 	}
 
 	render() {

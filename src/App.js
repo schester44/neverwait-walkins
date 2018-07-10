@@ -1,101 +1,106 @@
 import React, { Component } from "react"
-import { BrowserRouter as Router, Switch } from "react-router-dom"
-import { GuestRoute, AuthRoute } from "./components/routes"
-import { Query } from "react-apollo"
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
+import GuestRoute from "./components/GuestRoute"
 
 import Auth from "./modules/auth/views/AuthView"
-import Home from "./modules/home/views/HomeView"
+import SingleResourceHomeView from "./modules/home/views/SingleResource"
+import MultiResourceHomeView from "./modules/home/views/MultiResource"
+
 import Form from "./modules/signin/views/FormView"
 import Finished from "./modules/signin/views/FinishedView"
 import gql from "graphql-tag"
 
-const LOCATION_QUERY = gql`
-	{
+import { Query } from "react-apollo"
+import { isAuthenticated } from "./graphql/utils"
+
+export const LOCATION_QUERY = gql`
+	query LocationQuery($startTime: String!, $endTime: String!) {
 		location {
 			id
 			name
-			employees {
+			employees(input: { where: { bookingEnabled: true } }) {
 				id
 				firstName
-				appointments {
+				services {
+					id
+					name
+					price
+					duration
+				}
+				appointments(input: { where: { startTime: { gte: $startTime }, endTime: { lte: $endTime } } }) {
+					id
+					duration
 					startTime
+					endTime
 				}
 			}
 		}
 	}
 `
 
-const APPOINTMENT_CREATED_SUBSCRIPTION = gql`
-	subscription appointmenCreated {
-		appointmentCreated {
-			employee {
-				id
-				firstName
-				appointments {
-					startTime
-				}
-			}
-		}
-	}
-`
+const MainRoutes = ({ children }) => {
+	const authed = isAuthenticated()
 
+	if (!authed) {
+		return <Redirect to={{ pathname: "/auth" }} />
+	}
+
+	console.log("MAIN ROUTES RENDER")
+	const startTime = new Date()
+	startTime.setHours(0, 0, 0, 0).toString()
+	const endTime = new Date()
+	endTime.setHours(23, 59, 59, 0).toString()
+
+	return (
+		<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
+			{({ loading, data }) => {
+				if (loading) return <div>LOADING</div>
+
+				return children({ location: data.location })
+			}}
+		</Query>
+	)
+}
 class App extends Component {
-	componentWillUnmount() {
-		if (this.unsubscribe) {
-			this.unsubscribe()
-		}
-	}
-
 	render() {
 		return (
-			<Query query={LOCATION_QUERY}>
-				{({ loading, data, error, subscribeToMore }) => {
-					if (loading) return <div>LOADING APP</div>
+			<Router>
+				<Switch>
+					<GuestRoute path="/auth" component={Auth} />
+					<MainRoutes>
+						{({ location }) => {
+							return (
+								<React.Fragment>
+									<Route
+										exact
+										path="/"
+										render={props => {
+											const employees = location.employees.filter(emp => emp.services.length > 0)
+											return <MultiResourceHomeView employees={employees} location={location} />
+										}}
+									/>
 
-					if (!loading) {
-						if (this.unsubscribe) {
-							this.unsubscribe
-						}
-
-						this.unsubscribe = subscribeToMore({
-							document: APPOINTMENT_CREATED_SUBSCRIPTION,
-							updateQuery: (prev, { subscriptionData }) => {
-								if (!subscriptionData || !subscriptionData.data) return prev
-
-								return {
-									...prev,
-									location: {
-										...prev.location,
-										employees: prev.location.employees.map(
-											employee =>
-												employee.id === subscriptionData.data.appointmentCreated.employee.id
-													? subscriptionData.data.appointmentCreated.employee
-													: employee
-										)
-									}
-								}
-							}
-						})
-					}
-
-					return (
-						<Router>
-							<Switch>
-								<GuestRoute path="/auth" component={Auth} />
-								<AuthRoute
-									exact
-									path="/"
-									render={props => (
-										<Home locationData={data.location} showWaitTimes={data.location.employees.length < 2} {...props} />
-									)}
-								/>
-								<AuthRoute path="/sign-in" component={Form} />
-								<AuthRoute path="/finished" component={Finished} />
-							</Switch>
-						</Router>
-					)
-				}}
-			</Query>
+									<Route
+										path="/sign-in/:employeeId"
+										render={props => {
+											const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
+											return (
+												<Form
+													locationId={location.id}
+													employeeId={employee.id}
+													services={employee.services}
+													appointments={employee.appointments}
+												/>
+											)
+										}}
+									/>
+									<Route path="/finished" component={Finished} />
+								</React.Fragment>
+							)
+						}}
+					</MainRoutes>
+				</Switch>
+			</Router>
 		)
 	}
 }

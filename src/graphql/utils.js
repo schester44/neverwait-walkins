@@ -15,7 +15,6 @@ export const getTokenPayload = () => {
 		return decode(localStorage.getItem("AuthToken"))
 	} catch (error) {
 		console.log(error)
-
 		return {}
 	}
 }

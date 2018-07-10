@@ -6,13 +6,15 @@ import { HttpLink } from "apollo-link-http"
 import { WebSocketLink } from "apollo-link-ws"
 import { ApolloLink, split } from "apollo-link"
 import { getMainDefinition } from "apollo-utilities"
+import { AUTH_TOKEN_KEY } from "../constants"
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	console.log({ graphQLErrors, networkError })
 })
 
 const AuthLink = new ApolloLink((operation, forward) => {
-	const token = localStorage.getItem("AuthToken")
+	const token = localStorage.getItem(AUTH_TOKEN_KEY)
+	console.log('token from authlink', token);
 
 	if (token) {
 		operation.setContext({
@@ -32,7 +34,7 @@ const AuthLink = new ApolloLink((operation, forward) => {
 			const token = headers.get("x-token")
 
 			if (token) {
-				localStorage.setItem("AuthToken", token)
+				localStorage.setItem(AUTH_TOKEN_KEY, token)
 			}
 		}
 
@@ -40,17 +42,20 @@ const AuthLink = new ApolloLink((operation, forward) => {
 	})
 })
 
-const wsLink = new WebSocketLink({
+export const wsLink = new WebSocketLink({
 	uri: `ws://localhost:3443/subscriptions`,
 	options: {
 		reconnect: true,
+		lazy: true,
 		connectionParams: {
-			token: localStorage.getItem("AuthToken"),
+			token:
+				console.log('subscription token:', localStorage.getItem(AUTH_TOKEN_KEY)) ||
+				localStorage.getItem(AUTH_TOKEN_KEY),
 		},
 	}
 })
 
-const httpLink = ApolloLink.from([
+export const httpLink = ApolloLink.from([
 	onErrorLink,
 	AuthLink,
 	new HttpLink({
@@ -58,7 +63,6 @@ const httpLink = ApolloLink.from([
 	})
 ])
 	
-
 const link = split(
 	({ query }) => {
 		const { kind, operation } = getMainDefinition(query)

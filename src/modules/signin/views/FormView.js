@@ -1,5 +1,7 @@
 import React, { PureComponent } from "react"
-import styled, { keyframes } from "styled-components"
+import styled from "styled-components"
+import { withRouter } from "react-router-dom"
+
 import { compose } from "recompose"
 import gql from "graphql-tag"
 import { withApollo } from "react-apollo"
@@ -7,22 +9,11 @@ import { withApollo } from "react-apollo"
 import format from "date-fns/format"
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now"
 
-import Toggle from "../../../components/Toggle"
-import AppHeader from "../../../components/AppHeader"
-import Input from "../../../components/Input"
-import Button from "../../../components/Button"
+import { addMinutes, isAfter } from "date-fns"
 
-const fadeIn = keyframes`
-	from {
-		opacity: 0;
-		top: -15px;
-	}
-
-	to {
-		opacity: 1;
-		top: 0;
-	}
-`
+import { DB_DATE_STRING } from "../../../constants"
+import ServiceSelector from "../components/ServiceSelector"
+import CustomerForm from "../components/CustomerForm"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -33,173 +24,214 @@ const Wrapper = styled("div")`
 `
 
 const Content = styled("div")`
-	width: 90vw;
-	height: 63vh;
+	width: 100%;
+	flex: 1;
+`
+
+const Header = styled("div")`
 	display: flex;
-	flex-direction: column;
-	text-align: center;
-	margin-top: 5vh;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 20px;
 
-	.phone-number {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		margin-top: 25px;
+	h1 {
+		padding-top: 20px;
+		font-family: marguerite;
+		font-size: 62px;
+	}
+`
 
-		.instructions {
-			margin-top: 10px;
-			opacity: 0.2;
+const CREATE_CUSTOMER = gql`
+	mutation createCustomer($input: CreateCustomerInput!) {
+		CreateCustomer(input: $input) {
+			ok
+			customer {
+				id
+				firstName
+				lastName
+			}
 		}
 	}
-
-	.form-input-row {
-		width: 100%;
-		display: flex;
-		justify-content: space-between;
-	}
 `
 
-const PhoneInput = styled("div")`
-	position: relative;
-	width: 100%;
-	opacity: 0;
-	margin-top: 15px;
-	animation: ${fadeIn} 0.5s ease forwards;
-`
-
-const styles = {
-	inputWrapper: {
-		width: "45%"
-	},
-	phoneNumberWrapper: {
-		flex: 1
-	},
-	button: { marginTop: "5vh", marginBottom: "15vh" }
-}
-
-const CREATE_APPOINTMENT_MUTATION = gql`
-	mutation CreateAppointment($input: AppointmentInput!) {
-		createAppointment(input: $input) {
+const UPSERT_APPOINTMENT = gql`
+	mutation upsert($input: AppointmentInput!) {
+		upsertAppointment(input: $input) {
 			ok
 			appointment {
 				id
 				startTime
+				endTime
+				duration
+				services {
+					name
+				}
+				employee {
+					firstName
+					lastName
+				}
+				customer {
+					id
+					firstName
+					lastName
+				}
 			}
-			customer {
-				totalBookings
-			}
-			customerCreated
 			errors {
 				message
 			}
 		}
 	}
 `
-
 class Form extends PureComponent {
 	constructor(props) {
 		super(props)
+
+		const now = new Date()
+		const lastAppt = props.appointments[props.appointments.length - 1]
+		const checkInTime = format(now, DB_DATE_STRING)
+		const startTime = lastAppt && isAfter(lastAppt.endTime, now) ? lastAppt.endTime : checkInTime
+
 		this.state = {
+			page: 1,
+			selectedService: undefined,
 			isSubmitting: false,
-			isReceivingText: false,
-			fields: {
+			appointment: {
+				userId: props.employeeId,
+				locationId: props.locationId,
+				startTime,
+				services: []
+			},
+			customer: {
 				firstName: "",
-				lastName: "",
-				contactNumber: null,
-				pin: null
+				lastName: ""
 			}
 		}
-	}
 
-	handleTextToggle = ({ target: { checked } }) => {
-		this.setState({ isReceivingText: checked })
+		this.allServices = props.services.reduce((acc, service) => {
+			acc[service.id] = service
+			return acc
+		}, {})
 	}
-
-	handleInputChange = ({ target: { name, value } }) => {		
-		this.setState({
-			fields: {
-				...this.state.fields,
-				[name]: value
-			}
-		})
-	}
-	
 
 	handleSubmit = async () => {
 		this.setState({ isSubmitting: true })
 
-		const checkInTime = format(new Date(), "YYYY-MM-DD HH:mm:ss")
+		const duration = this.state.appointment.services.reduce((acc, id) => {
+			return acc + this.allServices[id].duration
+		}, 0)
 
-		// TODO: Remove hard coded userID
-		const variables = {
-			input: { ...this.state.fields, checkInTime, userId: 1, locationId: this.props.locationId }
-		}
-
-		const response = await this.props.client
-			.mutate({
-				mutation: CREATE_APPOINTMENT_MUTATION,
-				variables
-			})
-			.catch(error => {
-				console.log(error)
+		try {
+			const {
+				data: { CreateCustomer }
+			} = await this.props.client.mutate({
+				mutation: CREATE_CUSTOMER,
+				variables: {
+					input: this.state.customer
+				}
 			})
 
-		this.setState({ isSubmitting: false })
+			if (!CreateCustomer.ok) {
+				throw new Error("Failed to create the customer account. Please see the receptionist.")
+			}
 
-		if (response.data.createAppointment.ok) {
-			const { appointment: { id, startTime } } = response.data.createAppointment
-console.log(id);
-			// TODO -- Take to next page Confirmation Page with details about when they should be in the chair. Ask them if they want to add a PIN to checkout faster, etc. need response.customer.id to update the customer.
+			const customerId = CreateCustomer.customer.id
+
+			const {
+				data: { upsertAppointment }
+			} = await this.props.client.mutate({
+				mutation: UPSERT_APPOINTMENT,
+				variables: {
+					input: {
+						...this.state.appointment,
+						endTime: format(addMinutes(this.state.appointment.startTime, duration), DB_DATE_STRING),
+						customerId
+					}
+				}
+			})
+
+			if (!upsertAppointment.ok) {
+				throw new Error("Failed to create the appointment. Please see the receptionist.")
+			}
+
+			this.props.client.resetStore()
+
 			this.props.history.push({
 				pathname: "/finished",
-				contactNumber: this.state.fields.contactNumber,
-				distance: distanceInWordsToNow(startTime)
+				appointment: upsertAppointment.appointment
 			})
+
+		} catch (error) {
+			console.log("error", error)
+			this.setState({ isSubmitting: false })
 		}
 	}
 
+	handleInputChange = ({ target: { name, value } }) => {
+		this.setState({
+			customer: {
+				...this.state.customer,
+				[name]: value
+			}
+		})
+	}
+
+	handleServiceSelection = service => {
+		this.setState({
+			selectedService: service.id,
+			appointment: {
+				...this.state.appointment,
+				services: [service.id]
+			}
+		})
+	}
+
+	incrementPage = () => {
+		this.setState({ page: this.state.page + 1 })
+	}
+
+	decrementPage = () => {
+		if (this.state.page === 1) {
+			return this.props.history.push("/")
+		}
+
+		this.setState({ page: this.state.page - 1 })
+	}
 
 	render() {
 		return (
 			<Wrapper>
-				<AppHeader />
+				<Header>
+					<h1>Lorenzo's</h1>
+				</Header>
+
 				<Content>
-					<div className="form-input-row">
-						<div style={styles.inputWrapper}>
-							<Input label="First Name" type="text" name="firstName" onChange={this.handleInputChange} />
-						</div>
-
-						<div style={styles.inputWrapper}>
-							<Input label="Last Name" type="text" name="lastName" onChange={this.handleInputChange} />
-						</div>
-					</div>
-
-					<div className="phone-number" style={styles.phoneNumberWrapper}>
-						<div className="toggle-prompt">
-							<Toggle textAlign="right" onChange={this.handleTextToggle} text="Receive a text when its your turn?" />
-						</div>
-
-
-						{this.state.isReceivingText && (
-							<PhoneInput>
-								<Input label="Phone Number" type="tel" name="contactNumber" onChange={this.handleInputChange} />
-								<p className="instructions">You will receive a text 30 minutes before your appointment.</p>
-							</PhoneInput>
-						)}
-					</div>
-
-					<Button
-						style={styles.button}
-						disabled={this.state.isSubmitting || this.state.fields.firstName.length === 0}
-						onClick={this.handleSubmit}
-					>
-						Sign In
-					</Button>
+					{this.state.page === 1 ? (
+						<ServiceSelector
+							services={this.props.services}
+							disabled={this.state.appointment.services.length === 0}
+							selectedService={this.state.selectedService}
+							onSelect={this.handleServiceSelection}
+							onBackBtnClick={this.decrementPage}
+							onNextBtnClick={this.incrementPage}
+						/>
+					) : (
+						<CustomerForm
+							submitting={this.state.isSubmitting}
+							disabled={this.state.customer.firstName.length === 0}
+							fields={this.state.customer}
+							onSubmit={this.handleSubmit}
+							onBackBtnClick={this.decrementPage}
+							onInputChange={this.handleInputChange}
+						/>
+					)}
 				</Content>
 			</Wrapper>
 		)
 	}
 }
 
-export default compose(withApollo)(Form)
+export default compose(
+	withRouter,
+	withApollo
+)(Form)

@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react"
-import { Link } from "react-router-dom"
+import { Link, Redirect } from "react-router-dom"
 import styled from "styled-components"
-import AppHeader from "../../../components/AppHeader"
+import { format, distanceInWords } from "date-fns"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -11,74 +11,98 @@ const Wrapper = styled("div")`
 	align-items: center;
 `
 
+const Header = styled("div")`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 20px;
+
+	h1 {
+		padding-top: 20px;
+		font-family: marguerite;
+		font-size: 62px;
+	}
+`
+
 const Content = styled("div")`
-	width: 90vw;
+	display: flex;
+	flex-direction: column;
+
+	width: 100%;
 	height: 80vh;
 	text-align: center;
-	color: #7b808b;
+	color: rgba(32, 32, 32, 1);
 	margin-top: 3vh;
 
-	.time {
-		color: white;
-		font-weight: 700;
+	.body {
+		width: 100%;
+		flex: 1;
 	}
 
 	h1 {
-		font-size: 80px;
+		margin-bottom: 25px;
+		font-size: 28px;
 	}
 
 	p {
+		opacity: 0.8;
 		line-height: 1.5;
-		text-align: left;
-		margin-top: 25px;
-		font-size: 32px;
+		font-size: 28px;
 	}
 `
 
 const Button = styled("button")`
-	margin-top: 5vh;
-	width: 100%;
+	position: relative;
+	width: 80%;
+	margin: 50px auto 15px auto;
+	padding: 30px 10px;
 	border: 0;
-	font-size: 42px;
-	padding: 50px 0;
-	background: #473cd1;
-	border-radius: 5px;
-	cursor: pointer;
+	background: rgba(247, 107, 97, 1);
+	border-radius: 50px;
 	color: white;
+	font-size: 32px;
+	outline: none;
+	text-align: center;
+	text-transform: uppercase;
 `
 
 class Finished extends PureComponent {
 	componentDidMount() {
-		this.timer = window.setTimeout(() => {
+		this
+		this.timeout = window.setTimeout(() => {
 			this.props.history.push("/")
-		}, 15000)
+		}, 10000)
 	}
 
 	componentWillUnmount() {
-		if (this.timer) {
-			window.clearTimeout(this.timer)
+		if (this.timeout) {
+			window.clearTimeout(this.timeout)
 		}
 	}
 
 	render() {
+		const { appointment } = this.props.location
+
+		if (!appointment) {
+			return <Redirect to="/" />
+		}
+
 		return (
 			<Wrapper>
-				<AppHeader />
+				<Header>
+					<h1>Lorenzo's</h1>
+				</Header>
 
 				<Content>
-					<h1>You're all set!</h1>
+					<div className="body">
+						<h1>
+							You have checked in with {appointment.employee.firstName} for a {appointment.services[0].name}.
+						</h1>
 
-					<p style={{ textAlign: "center" }}>
-						You can expect to be in the chair in <br />
-						<span className="time">{this.props.location.distance}</span>
-					</p>
-
-					{this.props.location.contactNumber && (
-						<p>
-							We'll text you 45 minutes before your cut. You should be here 20 minutes prior to your cut. This is not an
-							appointment and we do not wait. If you are late you will need to re-sign in.
-						</p>
-					)}
+						<p>You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.</p>
+						<p>Current wait is about {` ${distanceInWords(new Date(), appointment.startTime)}`}.</p>
+					</div>
 
 					<Link to="/">
 						<Button>Finish</Button>
