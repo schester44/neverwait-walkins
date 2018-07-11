@@ -13,6 +13,21 @@ import gql from "graphql-tag"
 import { Query } from "react-apollo"
 import { isAuthenticated } from "./graphql/utils"
 
+const APPOINTMENTS_SUBSCRIPTION = gql`
+	subscription onAppointmentsChange($locationId: ID!) {
+		AppointmentsChange(locationId: $locationId) {
+			employeeId
+			appointment {
+				id
+				status
+				duration
+				startTime
+				endTime
+			}
+		}
+	}
+`
+
 export const LOCATION_QUERY = gql`
 	query LocationQuery($startTime: String!, $endTime: String!) {
 		location {
@@ -27,8 +42,11 @@ export const LOCATION_QUERY = gql`
 					price
 					duration
 				}
-				appointments(input: { where: { startTime: { gte: $startTime }, endTime: { lte: $endTime } } }) {
+				appointments(
+					input: { where: { status: { not: "completed" }, startTime: { gte: $startTime }, endTime: { lte: $endTime } } }
+				) {
 					id
+					status
 					duration
 					startTime
 					endTime
@@ -45,7 +63,6 @@ const MainRoutes = ({ children }) => {
 		return <Redirect to={{ pathname: "/auth" }} />
 	}
 
-	console.log("MAIN ROUTES RENDER")
 	const startTime = new Date()
 	startTime.setHours(0, 0, 0, 0).toString()
 	const endTime = new Date()
@@ -53,8 +70,61 @@ const MainRoutes = ({ children }) => {
 
 	return (
 		<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
-			{({ loading, data }) => {
+			{({ loading, data, error, subscribeToMore }) => {
 				if (loading) return <div>LOADING</div>
+
+				// TODO: This may need work.
+				if (!data.location) {
+					localStorage.removeItem("AuthToken")
+					return <Redirect to="/" />
+				}
+
+				if (!this.unsub) {
+					this.unsub = subscribeToMore({
+						document: APPOINTMENTS_SUBSCRIPTION,
+						variables: {
+							locationId: data.location.id
+						},
+						updateQuery: (prev, { subscriptionData }) => {
+							if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
+							const appointment = subscriptionData.data.AppointmentsChange.appointment
+							const employeeId = subscriptionData.data.AppointmentsChange.employeeId
+
+							const employee = prev.location.employees.find(emp => +emp.id === +employeeId)
+
+							if (!employee) {
+								console.log(`[ERROR]: No employee with that ID ${employeeId}`)
+								return false
+							}
+
+							const appointmentsById = employee.appointments.reduce((acc, curr) => {
+								acc[curr.id] = curr
+								return acc
+							}, {})
+
+							const appointments = appointmentsById[appointment.id]
+								? employee.appointments.map(app => (+app.id === +appointment.id ? appointment : app))
+								: [...employee.appointments, appointment]
+
+							const p = {
+								...prev,
+								location: {
+									...prev.location,
+									employees: prev.location.employees.map(employee => {
+										return +employee.id === +employeeId
+											? {
+													...employee,
+													appointments
+											  }
+											: employee
+									})
+								}
+							}
+							console.log(p)
+							return p
+						}
+					})
+				}
 
 				return children({ location: data.location })
 			}}
@@ -69,6 +139,7 @@ class App extends Component {
 					<GuestRoute path="/auth" component={Auth} />
 					<MainRoutes>
 						{({ location }) => {
+							console.log('re render');
 							return (
 								<React.Fragment>
 									<Route
@@ -76,7 +147,13 @@ class App extends Component {
 										path="/"
 										render={props => {
 											const employees = location.employees.filter(emp => emp.services.length > 0)
-											return <MultiResourceHomeView employees={employees} location={location} />
+
+											return (
+												<MultiResourceHomeView
+													employees={employees}
+													location={location}
+												/>
+											)
 										}}
 									/>
 

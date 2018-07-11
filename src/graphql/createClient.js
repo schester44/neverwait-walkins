@@ -7,15 +7,20 @@ import { WebSocketLink } from "apollo-link-ws"
 import { ApolloLink, split } from "apollo-link"
 import { getMainDefinition } from "apollo-utilities"
 import { AUTH_TOKEN_KEY } from "../constants"
+import config from "../config"
+
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
+	
+	if (networkError) {
+		console.log('this device is offline...handle this error');
+	}
+
 	console.log({ graphQLErrors, networkError })
 })
 
 const AuthLink = new ApolloLink((operation, forward) => {
 	const token = localStorage.getItem(AUTH_TOKEN_KEY)
-	console.log('token from authlink', token);
-
 	if (token) {
 		operation.setContext({
 			headers: {
@@ -43,15 +48,14 @@ const AuthLink = new ApolloLink((operation, forward) => {
 })
 
 export const wsLink = new WebSocketLink({
-	uri: `ws://localhost:3443/subscriptions`,
+	uri: config.SUBSCRIPTION_URI,
 	options: {
 		reconnect: true,
 		lazy: true,
 		connectionParams: {
 			token:
-				console.log('subscription token:', localStorage.getItem(AUTH_TOKEN_KEY)) ||
-				localStorage.getItem(AUTH_TOKEN_KEY),
-		},
+				console.log("subscription token:", localStorage.getItem(AUTH_TOKEN_KEY)) || localStorage.getItem(AUTH_TOKEN_KEY)
+		}
 	}
 })
 
@@ -59,10 +63,10 @@ export const httpLink = ApolloLink.from([
 	onErrorLink,
 	AuthLink,
 	new HttpLink({
-		uri: "http://localhost:3443/api"
+		uri: config.API_URL
 	})
 ])
-	
+
 const link = split(
 	({ query }) => {
 		const { kind, operation } = getMainDefinition(query)

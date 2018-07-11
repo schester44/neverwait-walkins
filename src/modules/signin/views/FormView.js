@@ -153,8 +153,6 @@ class Form extends PureComponent {
 				throw new Error("Failed to create the appointment. Please see the receptionist.")
 			}
 
-			this.props.client.resetStore()
-
 			this.props.history.push({
 				pathname: "/finished",
 				appointment: upsertAppointment.appointment

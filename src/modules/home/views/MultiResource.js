@@ -20,18 +20,16 @@ const Wrapper = styled("div")`
 	}
 `
 
-class MultiResource extends PureComponent {
-	render() {
-		return (
-			<Wrapper>
-				<div className="header">
-					<h1>Lorenzo's</h1>
-				</div>
+const MultiResource = ({ employees }) => {	
+	return (
+		<Wrapper>
+			<div className="header">
+				<h1>Lorenzo's</h1>
+			</div>
 
-				<EmployeeList employees={this.props.employees} />
-			</Wrapper>
-		)
-	}
+			<EmployeeList employees={employees} />
+		</Wrapper>
+	)
 }
 
 export default MultiResource

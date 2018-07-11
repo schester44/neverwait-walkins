@@ -61,6 +61,24 @@ const Wrapper = styled("div")`
 	}
 `
 
+const generateWaitTime = memoize(appointments => {
+	const now = new Date()
+
+	return appointments.reduce((acc, appt) => {
+		// filter out appointments that have ended
+		if (isBefore(appt.endTime, now) || appt.status === "completed") {
+			return acc
+		}
+
+		// appointment is in progress so don't add its entire duration, just calculate how much time is left
+		if (isBefore(appt.startTime, now)) {
+			return acc + differenceInMinutes(appt.endTime, now)
+		}
+
+		return acc + appt.duration
+	}, 0)
+})
+
 const timeFragmentsFromMinutes = memoize(mins => {
 	const hours = Math.floor(mins / 60)
 	const minutes = Math.floor(60 * ((mins / 60) % 1))
@@ -69,37 +87,24 @@ const timeFragmentsFromMinutes = memoize(mins => {
 })
 
 class Employee extends React.Component {
-	constructor(props) {
-		super(props)
-
-		this.state = {
-			waitTime: this.generateWaitTime(props.employee.appointments)
-		}
+	state = {
+		waitTime: 0
 	}
 
-	generateWaitTime(appointments) {
-		const now = new Date()
+	static getDerivedStateFromProps(nextProps, prevState) {
+		const waitTime = generateWaitTime(nextProps.employee.appointments)
 
-		return appointments.reduce((acc, appt) => {
-			// filter out appointments that have ended
-			if (isBefore(appt.endTime, now)) {
-				return acc
-			}
+		if (waitTime !== prevState.waitTime) {
+			return { waitTime }
+		}
 
-			// appointment is in progress so don't add its entire duration, just calculate how much time is left
-			if (isBefore(appt.startTime, now)) {
-				return acc + differenceInMinutes(appt.endTime, now)
-			}
-
-			return acc + appt.duration
-		}, 0)
+		return null
 	}
 
 	componentDidMount() {
 		this.timer = window.setInterval(() => {
-			console.log("UPDATING WAIT TIME")
 			this.setState({
-				waitTime: this.generateWaitTime(this.props.employee.appointments)
+				waitTime: generateWaitTime(this.props.employee.appointments)
 			})
 		}, 60000)
 	}
