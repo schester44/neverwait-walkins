@@ -1,6 +1,7 @@
 import React from "react"
 import styled from "styled-components"
-import { isAfter, isBefore, differenceInMinutes } from "date-fns"
+import { isBefore, differenceInMinutes } from "date-fns"
+import memoize from "memoize-one"
 
 const Wrapper = styled("div")`
 	flex: 1;
@@ -44,6 +45,7 @@ const Wrapper = styled("div")`
 		h1 {
 			font-size: 32px;
 			font-weight: 700;
+			text-transform: uppercase;
 		}
 	}
 
@@ -59,40 +61,82 @@ const Wrapper = styled("div")`
 	}
 `
 
-const Employee = ({ employee, onClick }) => {
-	const now = new Date()
+const timeFragmentsFromMinutes = memoize(mins => {
+	const hours = Math.floor(mins / 60)
+	const minutes = Math.floor(60 * ((mins / 60) % 1))
 
-	const waitTime = employee.appointments.reduce((acc, appt) => {
-		// appointment has ended
-		if (isBefore(appt.endTime, now)) {
-			return acc
+	return { hours, minutes }
+})
+
+class Employee extends React.Component {
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			waitTime: this.generateWaitTime(props.employee.appointments)
 		}
+	}
 
-		// appointment is in progress, get how much time is left
-		if (isBefore(appt.startTime, now)) {
-			return acc + differenceInMinutes(appt.endTime, now)
+	generateWaitTime(appointments) {
+		const now = new Date()
+
+		return appointments.reduce((acc, appt) => {
+			// filter out appointments that have ended
+			if (isBefore(appt.endTime, now)) {
+				return acc
+			}
+
+			// appointment is in progress so don't add its entire duration, just calculate how much time is left
+			if (isBefore(appt.startTime, now)) {
+				return acc + differenceInMinutes(appt.endTime, now)
+			}
+
+			return acc + appt.duration
+		}, 0)
+	}
+
+	componentDidMount() {
+		this.timer = window.setInterval(() => {
+			console.log("UPDATING WAIT TIME")
+			this.setState({
+				waitTime: this.generateWaitTime(this.props.employee.appointments)
+			})
+		}, 60000)
+	}
+
+	componentWillUnmount() {
+		if (this.timer) {
+			window.clearInterval(this.timer)
 		}
+	}
 
-		return acc + appt.duration
-	}, 0)
+	render() {
+		const { employee, onClick } = this.props
 
-	return (
-		<Wrapper>
-			<div className="avatar" onClick={onClick}>
-				<h1>{employee.firstName.charAt(0)}</h1>
-				<p>
-					{employee.firstName} {employee.lastName}
-				</p>
-			</div>
-			<div className="wait-time">
-				<p>Estimate Wait Time</p>
-				<h1>{waitTime} MINUTES</h1>
-			</div>
-			<button className="signin-btn" onClick={onClick}>
-				SIGN IN
-			</button>
-		</Wrapper>
-	)
+		const time = timeFragmentsFromMinutes(this.state.waitTime)
+
+		return (
+			<Wrapper>
+				<div className="avatar" onClick={onClick}>
+					<h1>{employee.firstName.charAt(0)}</h1>
+					<p>
+						{employee.firstName} {employee.lastName}
+					</p>
+				</div>
+				<div className="wait-time">
+					<p>Estimate Wait Time</p>
+					{this.state.waitTime < 10 ? (
+						<h1>No Wait</h1>
+					) : (
+						<h1>{time.hours > 0 ? `${time.hours}hr ${time.minutes}mins` : `${time.minutes} mins`}</h1>
+					)}
+				</div>
+				<button className="signin-btn" onClick={onClick}>
+					SIGN IN
+				</button>
+			</Wrapper>
+		)
+	}
 }
 
 export default Employee

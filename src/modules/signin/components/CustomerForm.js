@@ -10,8 +10,8 @@ const Wrapper = styled("div")`
 	align-items: center;
 	justify-content: space-between;
 	flex: 1;
-	height: 100%;
-	width: 100%;
+	height: 95%;
+	padding-top: 50px;
 
 	.buttons {
 		width: 80%;

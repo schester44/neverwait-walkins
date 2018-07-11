@@ -9,12 +9,13 @@ const Wrapper = styled("div")`
 	height: 100%;
 
 	.header {
-		padding: 40px 0 0 0;
+		padding: 0px 0 0 0;
 		text-align: center;
 		font-family: marguerite;
 
 		h1 {
-			font-size: 42px;
+			padding-top: 20px;
+			font-size: 62px;
 		}
 	}
 `

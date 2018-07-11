@@ -82,6 +82,7 @@ class Input extends React.Component {
 				<div className="input-wrapper">
 					<input
 						{...this.props}
+						autoComplete="off"
 						ref={this.setRef}
 						onBlur={() => {
 							if (this.props.value.length === 0) {
