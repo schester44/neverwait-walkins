@@ -106,7 +106,7 @@ const MainRoutes = ({ children }) => {
 								? employee.appointments.map(app => (+app.id === +appointment.id ? appointment : app))
 								: [...employee.appointments, appointment]
 
-							const p = {
+							return {
 								...prev,
 								location: {
 									...prev.location,
@@ -120,8 +120,6 @@ const MainRoutes = ({ children }) => {
 									})
 								}
 							}
-							console.log(p)
-							return p
 						}
 					})
 				}
@@ -139,7 +137,6 @@ class App extends Component {
 					<GuestRoute path="/auth" component={Auth} />
 					<MainRoutes>
 						{({ location }) => {
-							console.log('re render');
 							return (
 								<React.Fragment>
 									<Route

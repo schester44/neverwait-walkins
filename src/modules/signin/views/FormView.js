@@ -89,7 +89,8 @@ class Form extends PureComponent {
 		const now = new Date()
 		const lastAppt = props.appointments[props.appointments.length - 1]
 		const checkInTime = format(now, DB_DATE_STRING)
-		const startTime = lastAppt && isAfter(lastAppt.endTime, now) ? lastAppt.endTime : checkInTime
+		const startTime =
+			lastAppt && lastAppt.status !== "completed" && isAfter(lastAppt.endTime, now) ? lastAppt.endTime : checkInTime
 
 		this.state = {
 			page: 1,
@@ -157,7 +158,6 @@ class Form extends PureComponent {
 				pathname: "/finished",
 				appointment: upsertAppointment.appointment
 			})
-
 		} catch (error) {
 			console.log("error", error)
 			this.setState({ isSubmitting: false })

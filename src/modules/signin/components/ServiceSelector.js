@@ -92,7 +92,6 @@ const Service = styled("div")`
 	`};
 `
 
-
 const NextBtn = styled("div")`
 	position: relative;
 	width: 100%;
@@ -139,7 +138,14 @@ const ServiceSelector = ({ selectedService, services, disabled, onSelect, onNext
 			</div>
 
 			<div className="buttons">
-				<NextBtn onClick={onNextBtnClick} disabled={disabled}>
+				<NextBtn
+					onClick={() => {
+						if (!disabled) {
+							onNextBtnClick()
+						}
+					}}
+					disabled={disabled}
+				>
 					Next
 				</NextBtn>
 				<div className="back-btn" onClick={onBackBtnClick}>

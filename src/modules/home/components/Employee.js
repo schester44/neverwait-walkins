@@ -72,12 +72,14 @@ const generateWaitTime = memoize(appointments => {
 
 		// appointment is in progress so don't add its entire duration, just calculate how much time is left
 		if (isBefore(appt.startTime, now)) {
+			console.log("here", differenceInMinutes(appt.endTime, now))
 			return acc + differenceInMinutes(appt.endTime, now)
 		}
 
 		return acc + appt.duration
 	}, 0)
 })
+
 
 const timeFragmentsFromMinutes = memoize(mins => {
 	const hours = Math.floor(mins / 60)
@@ -130,7 +132,7 @@ class Employee extends React.Component {
 				</div>
 				<div className="wait-time">
 					<p>Estimate Wait Time</p>
-					{this.state.waitTime < 10 ? (
+					{this.state.waitTime < 5 ? (
 						<h1>No Wait</h1>
 					) : (
 						<h1>{time.hours > 0 ? `${time.hours}hr ${time.minutes}mins` : `${time.minutes} mins`}</h1>
