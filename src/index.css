@@ -12,8 +12,8 @@
 body, html, #root {
   width: 100%;
   height: 100%;
-  background: white;
-  color: rgba(32,32,32,1.0);
+  background: rgba(54, 54, 68, 1.0);
+  color: white;
   font-family: sans-serif;
 }
 

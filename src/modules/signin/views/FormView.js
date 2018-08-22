@@ -26,6 +26,8 @@ const Wrapper = styled("div")`
 const Content = styled("div")`
 	width: 100%;
 	flex: 1;
+	display: flex;
+	flex-direction: column;
 `
 
 const Header = styled("div")`
@@ -39,6 +41,41 @@ const Header = styled("div")`
 		font-family: marguerite;
 		font-size: 62px;
 	}
+`
+
+const SecondaryButton = styled("div")`
+	width: 80%;
+	padding: 30px 10px;
+	margin: 50px auto 15px auto;
+	border: 0;
+	background: transparent;
+	color: rgba(97, 178, 249, 1);
+	border-radius: 5px;
+	font-size: 32px;
+	text-align: center;
+	border: 2px solid transparent;
+`
+
+const PrimaryButton = styled("div")`
+	width: 80%;
+	padding: 30px 10px;
+	margin: 50px auto 15px auto;
+	border: 0;
+	background: rgba(97, 178, 249, 1);
+	color: rgba(40, 64, 91, 1);
+	border-radius: 5px;
+	font-size: 32px;
+	text-align: center;
+	border: 2px solid transparent;
+	box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
+
+	${props =>
+		props.disabled &&
+		`
+		background: transparent;
+		border: 2px solid #ccc;
+		color: #ccc;
+	`};
 `
 
 const CREATE_CUSTOMER = gql`
@@ -196,6 +233,9 @@ class Form extends PureComponent {
 	}
 
 	render() {
+		const buttonDisabled =
+			this.state.page === 1 ? this.state.customer.firstName.length === 0 : this.state.appointment.services.length === 0
+
 		return (
 			<Wrapper>
 				<Header>
@@ -204,24 +244,35 @@ class Form extends PureComponent {
 
 				<Content>
 					{this.state.page === 1 ? (
+						<CustomerForm fields={this.state.customer} onInputChange={this.handleInputChange} />
+					) : (
 						<ServiceSelector
 							services={this.props.services}
-							disabled={this.state.appointment.services.length === 0}
 							selectedService={this.state.selectedService}
 							onSelect={this.handleServiceSelection}
-							onBackBtnClick={this.decrementPage}
-							onNextBtnClick={this.incrementPage}
-						/>
-					) : (
-						<CustomerForm
-							submitting={this.state.isSubmitting}
-							disabled={this.state.customer.firstName.length === 0}
-							fields={this.state.customer}
-							onSubmit={this.handleSubmit}
-							onBackBtnClick={this.decrementPage}
-							onInputChange={this.handleInputChange}
 						/>
 					)}
+
+					<div className="buttons">
+						{!buttonDisabled && (
+							<PrimaryButton
+								submitting={this.state.isSubmitting}
+								onClick={e => {
+									if (this.state.isSubmitting) return
+
+									if (this.state.page === 1) {
+										this.incrementPage()
+									} else {
+										this.handleSubmit()
+									}
+								}}
+							>
+								{this.state.isSubmitting && <div className="loader" />}
+								{this.state.page === 1 ? "NEXT" : "CHECK IN"}
+							</PrimaryButton>
+						)}
+						<SecondaryButton onClick={this.decrementPage}>BACK</SecondaryButton>
+					</div>
 				</Content>
 			</Wrapper>
 		)

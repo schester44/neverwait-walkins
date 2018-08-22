@@ -14,8 +14,9 @@ const Wrapper = styled("div")`
 		font-family: marguerite;
 
 		h1 {
-			padding-top: 20px;
-			font-size: 62px;
+			padding-top: 80px;
+			font-size: 120px;
+			line-height: 1;
 		}
 	}
 `

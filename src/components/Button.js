@@ -5,14 +5,13 @@ const StyledBtn = styled("button")`
 		width: 100%;
 		padding: 30px 10px;
 		border: 0;
-		background: rgba(247, 107, 97, 1);
-		border-radius: 50px;
+		background: rgba(97, 178, 249, 1.0);
+		border-radius: 5px;
 		color: white;
 		font-size: 32px;
 
 	&:disabled {
-	transition: opacity: 1s ease;
-
+		transition: opacity: 1s ease;
 		cursor: not-allowed;
 		opacity: 0.2;
 	}

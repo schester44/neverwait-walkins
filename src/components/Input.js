@@ -9,13 +9,12 @@ const Wrapper = styled("div")`
 
 	label {
 		position: absolute;
-		top: 57px;
-		left: 10px;
+		transform: translate(10px, 57px);
 		text-transform: uppercase;
-		color: rgba(32, 32, 32, 0.4);
+		color: rgba(250, 250, 250, 0.4);
 		font-size: 32px;
 		font-weight: 300;
-        transition: all .5s ease;
+		transition: all 0.5s ease;
 	}
 
 	.input-wrapper {
@@ -27,32 +26,31 @@ const Wrapper = styled("div")`
 		font-size: 32px;
 		border: 0;
 		margin-top: 10px;
-		background: white;
-        border: 0;
-        border-bottom: 2px solid rgba(32,32,32,0.4);
-        width: 100%;
-        outline: none;
+		background: rgba(109, 109, 122, 1);
+		border: 0;
+		border-bottom: 2px solid rgba(32, 32, 32, 0.4);
+		border-radius: 5px;
+		width: 100%;
+		outline: none;
 		padding: 20px;
 		font-weight: 400;
 		outline: none;
-		color: rgba(32, 32, 32, 0.8);
+		color: rgba(250, 250, 250, 0.8);
 		pointer-events: none;
 	}
 
 	${props =>
 		props.focused &&
-        `
+		`
         input {
             transition: all .5s ease;
             border-bottom: 2px solid rgba(32,32,32,0.8);
         }
 
         label {
-            top: 20px;
-            left: 0;
-            color: rgba(32,32,32,0.8);
+			transform: translate(0px, 0px);
             font-size: 22px;
-		    font-weight: 700;
+		    font-weight: 300;
         }
     `};
 `

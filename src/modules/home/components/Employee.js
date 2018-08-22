@@ -11,7 +11,7 @@ const Wrapper = styled("div")`
 	padding: 0px 20px;
 	min-width: 50%;
 	justify-content: center;
-	max-height: 80%;
+	max-height: 100%;
 
 	.avatar {
 		width: 150px;
@@ -23,6 +23,11 @@ const Wrapper = styled("div")`
 		border-radius: 3px;
 		flex-direction: column;
 		margin-bottom: 25px;
+		position: relative;
+
+		img {
+			max-width: 100%;
+		}
 
 		h1 {
 			font-size: 80px;
@@ -31,21 +36,29 @@ const Wrapper = styled("div")`
 
 		p {
 			font-size: 22px;
+			position: absolute;
+			text-align: center;
+			bottom: 0;
+			z-index: 5;
+			text-shadow: 1px 2px 3px rgba(32, 32, 32, 1);
 		}
 	}
 
 	.wait-time {
 		text-align: center;
+		flex: 1;
+		margin-top: 100px;
 
 		p {
-			font-size: 14px;
-			color: rgba(32, 32, 32, 0.5);
+			font-size: 3em;
+			color: white;
 		}
 
 		h1 {
-			font-size: 32px;
+			font-size: 5em;
 			font-weight: 700;
 			text-transform: uppercase;
+			line-height: 1.5;
 		}
 	}
 
@@ -54,9 +67,9 @@ const Wrapper = styled("div")`
 		width: 100%;
 		padding: 30px 10px;
 		border: 0;
-		background: rgba(247, 107, 97, 1);
-		border-radius: 50px;
-		color: white;
+		background: rgba(97, 178, 249, 1);
+		color: rgba(40, 64, 91, 1);
+		border-radius: 5px;
 		font-size: 32px;
 	}
 `
@@ -79,7 +92,6 @@ const generateWaitTime = memoize(appointments => {
 		return acc + appt.duration
 	}, 0)
 })
-
 
 const timeFragmentsFromMinutes = memoize(mins => {
 	const hours = Math.floor(mins / 60)
@@ -124,14 +136,15 @@ class Employee extends React.Component {
 
 		return (
 			<Wrapper>
-				<div className="avatar" onClick={onClick}>
+				{/* <div className="avatar" onClick={onClick}>
 					<h1>{employee.firstName.charAt(0)}</h1>
 					<p>
-						{employee.firstName} {employee.lastName}
+						{employee.firstName} Altobelli {employee.lastName}
 					</p>
-				</div>
+				</div> */}
+
 				<div className="wait-time">
-					<p>Estimate Wait Time</p>
+					<p>Estimated Wait Time</p>
 					{this.state.waitTime < 5 ? (
 						<h1>No Wait</h1>
 					) : (

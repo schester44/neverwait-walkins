@@ -31,7 +31,7 @@ const Content = styled("div")`
 	width: 100%;
 	height: 80vh;
 	text-align: center;
-	color: rgba(32, 32, 32, 1);
+	color: white;
 	margin-top: 3vh;
 
 	.body {
@@ -40,30 +40,29 @@ const Content = styled("div")`
 	}
 
 	h1 {
-		margin-bottom: 25px;
-		font-size: 28px;
+		margin-bottom: 50px;
+		font-size: 3em;
 	}
 
 	p {
 		opacity: 0.8;
 		line-height: 1.5;
-		font-size: 28px;
+		font-size: 2em;
 	}
 `
 
 const Button = styled("button")`
-	position: relative;
 	width: 80%;
-	margin: 50px auto 15px auto;
 	padding: 30px 10px;
+	margin: 50px auto 15px auto;
 	border: 0;
-	background: rgba(247, 107, 97, 1);
-	border-radius: 50px;
-	color: white;
+	background: rgba(97, 178, 249, 1);
+	color: rgba(40, 64, 91, 1);
+	border-radius: 5px;
 	font-size: 32px;
-	outline: none;
 	text-align: center;
-	text-transform: uppercase;
+	border: 2px solid transparent;
+	box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
 `
 
 class Finished extends PureComponent {
@@ -96,11 +95,18 @@ class Finished extends PureComponent {
 				<Content>
 					<div className="body">
 						<h1>
-							You have checked in with {appointment.employee.firstName} for a {appointment.services[0].name}.
+							You have created a {appointment.services[0].name} appointment with {appointment.employee.firstName}.
 						</h1>
 
 						<p>You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.</p>
-						<p>Current wait is about {` ${distanceInWords(new Date(), appointment.startTime)}`}.</p>
+						<p style={{ marginBottom: 50 }}>
+							Current wait is {` ${distanceInWords(new Date(), appointment.startTime)}`}.
+						</p>
+
+						<p>
+							We're not here to waste your time. Feel free to leave the shop and come back within 20 minutes of your
+							scheduled appointment time, just leave a $10 refundable deposit at the front desk.
+						</p>
 					</div>
 
 					<Link to="/">

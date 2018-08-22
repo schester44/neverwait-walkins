@@ -17,52 +17,30 @@ const Wrapper = styled("div")`
 	align-items: center;
 	justify-content: space-between;
 	flex: 1;
-	height: 100%;
+	padding-top: 50px;
 
-	.heading {
+	h1 {
+		margin: 20px 0;
+		font-weight: 100;
 		text-align: center;
-		padding: 50px 0;
-
-		h1 {
-			font-weight: 100;
-		}
 	}
 
-	.list {
+	.form {
 		width: 90%;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
+		background: rgba(69, 69, 82, 1);
+		padding: 20px 40px;
+		border-radius: 5px;
+		box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
+
+		.list {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+		}
 	}
 
 	.buttons {
 		width: 80%;
-	}
-
-	.back-btn {
-		width: 100%;
-		margin: 10px auto 50px auto;
-		padding: 30px 10px;
-		border: 0;
-		border: 1px solid rgba(32, 32, 32, 0.2);
-		border-radius: 50px;
-		color: rgba(32, 32, 32, 0.2);
-		font-size: 32px;
-		outline: none;
-		text-align: center;
-	}
-
-	.next-btn {
-		width: 100%;
-		margin: 50px auto 15px auto;
-		padding: 30px 10px;
-		border: 0;
-		background: rgba(247, 107, 97, 1);
-		border-radius: 50px;
-		color: white;
-		font-size: 32px;
-		outline: none;
-		text-align: center;
 	}
 `
 
@@ -73,10 +51,12 @@ const Service = styled("div")`
 	justify-content: center;
 	width: calc(50% - 40px);
 	height: 200px;
-	background: rgba(32, 32, 32, 0.2);
+	background: rgba(115, 117, 128, 1);
 	margin: 10px;
 	transition: all 0.2s ease;
 	border-radius: 15px;
+	color: rgba(234, 232, 237, 1);
+	box-shadow: 1px 2px 5px rgba(32, 32, 32, 1);
 
 	p {
 		opacity: 0.5;
@@ -87,69 +67,32 @@ const Service = styled("div")`
 		props.selected &&
 		`
 		animation: ${grow} .5s ease;
-		background: rgba(32,32,32, 0.5);
-		box-shadow: 0px 5px 10px rgba(32,32,32,0.1);
+		color: rgba(42, 66, 89, 1.0);
+		background: rgba(105, 180, 243, 1.0);
+		box-shadow: 1px 5px 10px rgba(32,32,32,1ƒ);
 	`};
 `
 
-const NextBtn = styled("div")`
-	position: relative;
-	width: 100%;
-	margin: 50px auto 15px auto;
-	padding: 30px 10px;
-	border: 0;
-	background: rgba(247, 107, 97, 1);
-	border-radius: 50px;
-	color: white;
-	font-size: 32px;
-	outline: none;
-	text-align: center;
-	text-transform: uppercase;
-
-	${props =>
-		props.disabled &&
-		`
-		filter: blur(3px);
-	`};
-`
-
-const ServiceSelector = ({ selectedService, services, disabled, onSelect, onNextBtnClick, onBackBtnClick }) => {
+const ServiceSelector = ({ selectedService, services, onSelect }) => {
 	return (
 		<Wrapper>
-			<div className="heading">
+			<div className="form">
 				<h1>SELECT A SERVICE</h1>
-			</div>
-
-			<div className="list">
-				{services.map(service => {
-					return (
-						<Service
-							key={`service-${service.id}`}
-							onClick={() => onSelect(service)}
-							selected={selectedService === service.id}
-						>
-							<h1>{service.name}</h1>
-							<p>
-								${service.price || 0} {service.duration > 0 && `- ${service.duration} minutes`}
-							</p>
-						</Service>
-					)
-				})}
-			</div>
-
-			<div className="buttons">
-				<NextBtn
-					onClick={() => {
-						if (!disabled) {
-							onNextBtnClick()
-						}
-					}}
-					disabled={disabled}
-				>
-					Next
-				</NextBtn>
-				<div className="back-btn" onClick={onBackBtnClick}>
-					BACK
+				<div className="list">
+					{services.map(service => {
+						return (
+							<Service
+								key={`service-${service.id}`}
+								onClick={() => onSelect(service)}
+								selected={selectedService === service.id}
+							>
+								<h1>{service.name}</h1>
+								<p>
+									${service.price || 0} {service.duration > 0 && `- ${service.duration} minutes`}
+								</p>
+							</Service>
+						)
+					})}
 				</div>
 			</div>
 		</Wrapper>

@@ -37,7 +37,7 @@ class AppHeader extends Component {
 		}, 1000 * 60)
 	}
 
-	shouldComponentUpdate(nextProps, nextState, nextContext) {
+	shouldComponentUpdate(nextProps, nextState) {
 		return nextState.time !== this.state.time
 	}
 

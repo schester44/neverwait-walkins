@@ -1,7 +1,6 @@
 import React from "react"
 import styled from "styled-components"
 
-import Button from "../../../components/Button"
 import Input from "../../../components/Input"
 
 const Wrapper = styled("div")`
@@ -10,83 +9,42 @@ const Wrapper = styled("div")`
 	align-items: center;
 	justify-content: space-between;
 	flex: 1;
-	height: 95%;
 	padding-top: 50px;
+
+	h1 {
+		margin: 20px 0;
+		font-weight: 100;
+		text-align: center;
+	}
 
 	.buttons {
 		width: 80%;
 	}
 
 	.form {
-		width: 80%;
+		width: 90%;
+		background: rgba(69, 69, 82, 1);
+		padding: 20px 40px;
+		border-radius: 5px;
+		box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
 	}
 
 	.form-input {
 		width: 100%;
 	}
-
-	.back-btn {
-		width: 100%;
-		margin: 10px auto 50px auto;
-		padding: 30px 10px;
-		border: 0;
-		border: 1px solid rgba(32, 32, 32, 0.2);
-		border-radius: 50px;
-		color: rgba(32, 32, 32, 0.2);
-		font-size: 32px;
-		outline: none;
-		text-align: center;
-	}
 `
 
-const SignInButton = styled("div")`
-	position: relative;
-	width: 100%;
-	margin: 50px auto 15px auto;
-	padding: 30px 10px;
-	border: 0;
-	background: rgba(247, 107, 97, 1);
-	border-radius: 50px;
-	color: white;
-	font-size: 32px;
-	outline: none;
-	text-align: center;
-	text-transform: uppercase;
-
-	${props =>
-		props.disabled &&
-		`
-		filter: blur(3px);
-	`};
-`
-
-const CustomerForm = ({ onInputChange, fields, onSubmit, disabled, submitting, onBackBtnClick }) => {
+const CustomerForm = ({ onInputChange, fields }) => {
 	return (
 		<Wrapper>
 			<div className="form">
+				<h1>ENTER YOUR NAME</h1>
 				<div className="form-input">
 					<Input label="First Name" type="text" name="firstName" value={fields.firstName} onChange={onInputChange} />
 				</div>
 
 				<div className="form-input">
 					<Input label="Last Name" type="text" name="lastName" value={fields.lastName} onChange={onInputChange} />
-				</div>
-			</div>
-
-			<div className="buttons">
-				<SignInButton
-					disabled={disabled}
-					submitting={submitting}
-					onClick={e => {
-						if (disabled || submitting) return
-						onSubmit(e)
-					}}
-				>
-					{submitting && <div className="loader" />}
-					Sign In
-				</SignInButton>
-				<div className="back-btn" onClick={onBackBtnClick}>
-					BACK
 				</div>
 			</div>
 		</Wrapper>
