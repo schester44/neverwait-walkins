@@ -1,7 +1,7 @@
 import React, { PureComponent } from "react"
 import { Link, Redirect } from "react-router-dom"
 import styled from "styled-components"
-import { format, distanceInWords } from "date-fns"
+import { format } from "date-fns"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -70,7 +70,7 @@ class Finished extends PureComponent {
 		this
 		this.timeout = window.setTimeout(() => {
 			this.props.history.push("/")
-		}, 10000)
+		}, 20000)
 	}
 
 	componentWillUnmount() {
@@ -98,10 +98,15 @@ class Finished extends PureComponent {
 							You have created a {appointment.services[0].name} appointment with {appointment.employee.firstName}.
 						</h1>
 
-						<p>You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.</p>
+						<p style={{ marginBottom: 50, color: "white" }}>
+							You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.
+						</p>
+
+						{/*  -- this isn't completely accurate and displays a longer wait time then it should. TODO: Find more accurate distanceInWords function
+						
 						<p style={{ marginBottom: 50 }}>
 							Current wait is {` ${distanceInWords(new Date(), appointment.startTime)}`}.
-						</p>
+						</p> */}
 
 						<p>
 							We're not here to waste your time. Feel free to leave the shop and come back within 20 minutes of your

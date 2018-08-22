@@ -74,6 +74,8 @@ const Wrapper = styled("div")`
 	}
 `
 
+
+// TODO: Find the first N minute gap. thats when there is an opening available.
 const generateWaitTime = memoize(appointments => {
 	const now = new Date()
 
@@ -85,7 +87,6 @@ const generateWaitTime = memoize(appointments => {
 
 		// appointment is in progress so don't add its entire duration, just calculate how much time is left
 		if (isBefore(appt.startTime, now)) {
-			console.log("here", differenceInMinutes(appt.endTime, now))
 			return acc + differenceInMinutes(appt.endTime, now)
 		}
 

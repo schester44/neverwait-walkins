@@ -1,15 +1,14 @@
 import React, { PureComponent } from "react"
 import styled from "styled-components"
-import { withRouter } from "react-router-dom"
-
 import { compose } from "recompose"
-import gql from "graphql-tag"
+import { withRouter } from "react-router-dom"
 import { withApollo } from "react-apollo"
 
 import format from "date-fns/format"
-import distanceInWordsToNow from "date-fns/distance_in_words_to_now"
+import addMinutes from "date-fns/add_minutes"
+import isAfter from "date-fns/is_after"
 
-import { addMinutes, isAfter } from "date-fns"
+import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 
 import { DB_DATE_STRING } from "../../../constants"
 import ServiceSelector from "../components/ServiceSelector"
@@ -78,56 +77,9 @@ const PrimaryButton = styled("div")`
 	`};
 `
 
-const CREATE_CUSTOMER = gql`
-	mutation createCustomer($input: CreateCustomerInput!) {
-		CreateCustomer(input: $input) {
-			ok
-			customer {
-				id
-				firstName
-				lastName
-			}
-		}
-	}
-`
-
-const UPSERT_APPOINTMENT = gql`
-	mutation upsert($input: AppointmentInput!) {
-		upsertAppointment(input: $input) {
-			ok
-			appointment {
-				id
-				startTime
-				endTime
-				duration
-				services {
-					name
-				}
-				employee {
-					firstName
-					lastName
-				}
-				customer {
-					id
-					firstName
-					lastName
-				}
-			}
-			errors {
-				message
-			}
-		}
-	}
-`
 class Form extends PureComponent {
 	constructor(props) {
 		super(props)
-
-		const now = new Date()
-		const lastAppt = props.appointments[props.appointments.length - 1]
-		const checkInTime = format(now, DB_DATE_STRING)
-		const startTime =
-			lastAppt && lastAppt.status !== "completed" && isAfter(lastAppt.endTime, now) ? lastAppt.endTime : checkInTime
 
 		this.state = {
 			page: 1,
@@ -136,7 +88,6 @@ class Form extends PureComponent {
 			appointment: {
 				userId: props.employeeId,
 				locationId: props.locationId,
-				startTime,
 				services: []
 			},
 			customer: {
@@ -174,6 +125,16 @@ class Form extends PureComponent {
 
 			const customerId = CreateCustomer.customer.id
 
+			const lastAppt = this.props.appointments[this.props.appointments.length - 1]
+			const now = new Date()
+			const checkInTime = format(now, DB_DATE_STRING)
+
+			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
+			const startTime =
+				lastAppt && (lastAppt.status !== "completed" || isAfter(lastAppt.endTime, now))
+					? addMinutes(lastAppt.endTime, 2)
+					: checkInTime
+
 			const {
 				data: { upsertAppointment }
 			} = await this.props.client.mutate({
@@ -181,7 +142,8 @@ class Form extends PureComponent {
 				variables: {
 					input: {
 						...this.state.appointment,
-						endTime: format(addMinutes(this.state.appointment.startTime, duration), DB_DATE_STRING),
+						startTime,
+						endTime: format(addMinutes(startTime, duration), DB_DATE_STRING),
 						customerId
 					}
 				}

@@ -1,60 +1,16 @@
 import React, { Component } from "react"
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
-import GuestRoute from "./components/GuestRoute"
-
-import Auth from "./modules/auth/views/AuthView"
-import SingleResourceHomeView from "./modules/home/views/SingleResource"
-import MultiResourceHomeView from "./modules/home/views/MultiResource"
-
-import Form from "./modules/signin/views/FormView"
-import Finished from "./modules/signin/views/FinishedView"
-import gql from "graphql-tag"
 
 import { Query } from "react-apollo"
 import { isAuthenticated } from "./graphql/utils"
+import { APPOINTMENTS_SUBSCRIPTION } from "./graphql/subscriptions"
+import { LOCATION_QUERY } from "./graphql/queries"
 
-const APPOINTMENTS_SUBSCRIPTION = gql`
-	subscription onAppointmentsChange($locationId: ID!) {
-		AppointmentsChange(locationId: $locationId) {
-			employeeId
-			appointment {
-				id
-				status
-				duration
-				startTime
-				endTime
-			}
-		}
-	}
-`
-
-export const LOCATION_QUERY = gql`
-	query LocationQuery($startTime: String!, $endTime: String!) {
-		location {
-			id
-			name
-			employees(input: { where: { bookingEnabled: true } }) {
-				id
-				firstName
-				services {
-					id
-					name
-					price
-					duration
-				}
-				appointments(
-					input: { where: { status: { not: "completed" }, startTime: { gte: $startTime }, endTime: { lte: $endTime } } }
-				) {
-					id
-					status
-					duration
-					startTime
-					endTime
-				}
-			}
-		}
-	}
-`
+import Auth from "./modules/auth/views/AuthView"
+import MultiResourceHomeView from "./modules/home/views/MultiResource"
+import Form from "./modules/signin/views/FormView"
+import Finished from "./modules/signin/views/FinishedView"
+import GuestRoute from "./components/GuestRoute"
 
 const MainRoutes = ({ children }) => {
 	const authed = isAuthenticated()
@@ -63,8 +19,10 @@ const MainRoutes = ({ children }) => {
 		return <Redirect to={{ pathname: "/auth" }} />
 	}
 
+	// Get all the events for today
 	const startTime = new Date()
 	startTime.setHours(0, 0, 0, 0).toString()
+
 	const endTime = new Date()
 	endTime.setHours(23, 59, 59, 0).toString()
 
@@ -87,6 +45,7 @@ const MainRoutes = ({ children }) => {
 						},
 						updateQuery: (prev, { subscriptionData }) => {
 							if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
+
 							const appointment = subscriptionData.data.AppointmentsChange.appointment
 							const employeeId = subscriptionData.data.AppointmentsChange.employeeId
 
@@ -145,12 +104,7 @@ class App extends Component {
 										render={props => {
 											const employees = location.employees.filter(emp => emp.services.length > 0)
 
-											return (
-												<MultiResourceHomeView
-													employees={employees}
-													location={location}
-												/>
-											)
+											return <MultiResourceHomeView employees={employees} location={location} />
 										}}
 									/>
 
@@ -158,6 +112,7 @@ class App extends Component {
 										path="/sign-in/:employeeId"
 										render={props => {
 											const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
+
 											return (
 												<Form
 													locationId={location.id}

@@ -9,7 +9,7 @@ const Wrapper = styled("div")`
 
 	label {
 		position: absolute;
-		transform: translate(10px, 57px);
+		transform: translate(20px, 57px);
 		text-transform: uppercase;
 		color: rgba(250, 250, 250, 0.4);
 		font-size: 32px;
