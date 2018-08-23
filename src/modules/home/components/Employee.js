@@ -78,8 +78,7 @@ const Wrapper = styled("div")`
 	}
 `
 
-// TODO: Find the first N minute gap. thats when there is an opening available.
-const generateWaitTime = memoize(appointments => {
+const waitTimeInMinutes = appointments => {
 	const now = new Date()
 
 	// sort by startTime so appointments are in the order of which they occur
@@ -106,9 +105,8 @@ const generateWaitTime = memoize(appointments => {
 	})
 
 	if (!lastAppt) return 0
-
 	return differenceInMinutes(lastAppt.endTime, now)
-})
+}
 
 const timeFragmentsFromMinutes = memoize(mins => {
 	const hours = Math.floor(mins / 60)
@@ -123,7 +121,7 @@ class Employee extends React.Component {
 	}
 
 	static getDerivedStateFromProps(nextProps, prevState) {
-		const waitTime = generateWaitTime(nextProps.employee.appointments)
+		const waitTime = waitTimeInMinutes(nextProps.employee.appointments)
 
 		if (waitTime !== prevState.waitTime) {
 			return { waitTime }
@@ -135,7 +133,7 @@ class Employee extends React.Component {
 	componentDidMount() {
 		this.timer = window.setInterval(() => {
 			this.setState({
-				waitTime: generateWaitTime(this.props.employee.appointments)
+				waitTime: waitTimeInMinutes(this.props.employee.appointments)
 			})
 		}, 60000)
 	}
@@ -147,7 +145,7 @@ class Employee extends React.Component {
 	}
 
 	render() {
-		const { employee, onClick } = this.props
+		const { onClick } = this.props
 
 		const time = timeFragmentsFromMinutes(this.state.waitTime)
 
