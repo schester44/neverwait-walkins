@@ -92,27 +92,29 @@ class Form extends PureComponent {
 			}
 
 			const customerId = CreateCustomer.customer.id
-
-			// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the employe there since theres room for the appointment.
-
+			const now = new Date()
+			const checkInTime = format(now, DB_DATE_STRING)
+			
 			// sort by startTime so appointments are in the order of which they occur
 			const sortedAppointments = [...this.props.appointments].sort(
 				(a, b) => new Date(a.startTime) - new Date(b.startTime)
 			)
 
 			const lastAppt = sortedAppointments.find((appointment, index) => {
-				if (index === sortedAppointments.length - 1) return true
-
 				const next = sortedAppointments[index + 1]
 
+				// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
+				if (isBefore(appointment.endTime, subMinutes(now, 2)) || !next) {
+					return false
+				}
+
+				// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
 				if (isBefore(addMinutes(appointment.endTime, duration + 4), next.startTime)) {
+					console.log(appointment.endTime, now, isBefore(appointment.endTime, subMinutes(now, 2)))
 					console.log("found it", appointment.endTime, next.startTime, duration)
 					return true
 				}
 			})
-
-			const now = new Date()
-			const checkInTime = format(now, DB_DATE_STRING)
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
