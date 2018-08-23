@@ -106,14 +106,12 @@ class Form extends PureComponent {
 				}
 
 				// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
-				if (isBefore(appointment.endTime, subMinutes(now, 2))) {
+				if (isBefore(appointment.endTime, subMinutes(now, 1))) {
 					return false
 				}
 
 				// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
-				if (next && isBefore(addMinutes(appointment.endTime, duration + 4), next.startTime)) {
-					console.log(appointment.endTime, now, isBefore(appointment.endTime, subMinutes(now, 2)))
-					console.log("found it", appointment.endTime, next.startTime, duration)
+				if (next && isBefore(addMinutes(appointment.endTime, duration), next.startTime)) {
 					return true
 				}
 
@@ -122,20 +120,9 @@ class Form extends PureComponent {
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
-				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 4))
-					? checkInTime
-					: format(addMinutes(lastAppt.endTime, 2))
+				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2)) ? checkInTime : format(lastAppt.endTime)
 
 			const endTime = format(addMinutes(startTime, duration))
-
-			console.log({
-				input: {
-					...this.state.appointment,
-					startTime,
-					endTime,
-					customerId
-				}
-			})
 
 			const {
 				data: { upsertAppointment }

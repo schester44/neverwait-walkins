@@ -84,6 +84,7 @@ const waitTimeInMinutes = appointments => {
 	// sort by startTime so appointments are in the order of which they occur
 	const sortedAppointments = [...appointments].sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
+	// Last appointment is used to generate the current wait time. If the appointment is in the past then it shouldn't be considered as the lastAppointment since we don't want to create appointments in the past and we can just use the current time instead.
 	const lastAppt = sortedAppointments.find((appointment, index) => {
 		const next = sortedAppointments[index + 1]
 
@@ -96,10 +97,8 @@ const waitTimeInMinutes = appointments => {
 			return true
 		}
 
-		// We're adding 15 + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
-		if (next && isBefore(addMinutes(appointment.endTime, 15 + 4), next.startTime)) {
-			console.log(appointment.endTime, now, isBefore(appointment.endTime, subMinutes(now, 2)))
-			console.log("found it", appointment.endTime, next.startTime, 15)
+		// We're adding 15 + 2 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 2 minutes. We should insert the appointment since theres room for the appointment.
+		if (next && isBefore(addMinutes(appointment.endTime, 15 + 2), next.startTime)) {
 			return true
 		}
 
