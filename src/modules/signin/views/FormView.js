@@ -9,7 +9,6 @@ import addMinutes from "date-fns/add_minutes"
 
 import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 
-import { DB_DATE_STRING } from "../../../constants"
 import ServiceSelector from "../components/ServiceSelector"
 import CustomerForm from "../components/CustomerForm"
 import FormButtons from "../components/FormButtons"
