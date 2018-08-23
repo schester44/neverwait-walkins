@@ -74,7 +74,6 @@ const vowels = {
 
 class Finished extends PureComponent {
 	componentDidMount() {
-		this
 		this.timeout = window.setTimeout(() => {
 			this.props.history.push("/")
 		}, 20000)

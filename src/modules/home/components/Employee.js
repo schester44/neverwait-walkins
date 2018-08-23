@@ -102,6 +102,8 @@ const waitTimeInMinutes = appointments => {
 			console.log("found it", appointment.endTime, next.startTime, 15)
 			return true
 		}
+
+		return false
 	})
 
 	if (!lastAppt) return 0

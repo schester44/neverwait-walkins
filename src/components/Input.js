@@ -1,5 +1,6 @@
 import React from "react"
 import styled from "styled-components"
+import { onlyUpdateForKeys } from "recompose"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -67,11 +68,10 @@ class Input extends React.Component {
 		return (
 			<Wrapper
 				focused={this.props.value.length > 0 || this.state.focused}
-                onClick={() => {
-                    
-                    if (this.ref) {
-                        this.ref.focus()
-                    }
+				onClick={() => {
+					if (this.ref) {
+						this.ref.focus()
+					}
 
 					this.setState({ focused: true })
 				}}
@@ -94,4 +94,4 @@ class Input extends React.Component {
 	}
 }
 
-export default Input
+export default onlyUpdateForKeys(["value"])(Input)

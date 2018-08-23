@@ -6,7 +6,6 @@ import { withApollo } from "react-apollo"
 
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
-import isAfter from "date-fns/is_after"
 
 import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 
@@ -118,6 +117,8 @@ class Form extends PureComponent {
 					console.log("found it", appointment.endTime, next.startTime, duration)
 					return true
 				}
+
+				return false
 			})
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now

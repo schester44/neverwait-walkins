@@ -1,5 +1,6 @@
 import React from "react"
 import styled, { keyframes } from "styled-components"
+import { onlyUpdateForKeys } from "recompose"
 
 const pulse = keyframes`
 	0% {
@@ -67,4 +68,4 @@ const FormButtons = ({ disabled, submitting, page, onNextButtonClick, onBackButt
 	)
 }
 
-export default FormButtons
+export default onlyUpdateForKeys(["disabled", "submitting", "page"])(FormButtons)
