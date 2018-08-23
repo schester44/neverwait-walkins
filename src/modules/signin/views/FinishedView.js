@@ -109,8 +109,8 @@ class Finished extends PureComponent {
 						</p> */}
 
 						<p>
-							We're not here to waste your time. Feel free to leave the shop and come back within 20 minutes of your
-							scheduled appointment time, just leave a $10 refundable deposit at the front desk.
+							Feel free to leave the shop and come back within 20 minutes of your scheduled appointment time, just leave
+							a $10 refundable deposit at the front desk.
 						</p>
 					</div>
 

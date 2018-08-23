@@ -13,7 +13,7 @@ import config from "../config"
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	
 	if (networkError) {
-		console.log('this device is offline...handle this error');
+		console.log('this device is offline...[TODO]: handle this error');
 	}
 
 	console.log({ graphQLErrors, networkError })

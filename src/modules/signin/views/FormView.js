@@ -13,6 +13,8 @@ import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 import { DB_DATE_STRING } from "../../../constants"
 import ServiceSelector from "../components/ServiceSelector"
 import CustomerForm from "../components/CustomerForm"
+import FormButtons from "../components/FormButtons"
+import { isBefore, subMinutes } from "date-fns"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -40,41 +42,6 @@ const Header = styled("div")`
 		font-family: marguerite;
 		font-size: 62px;
 	}
-`
-
-const SecondaryButton = styled("div")`
-	width: 80%;
-	padding: 30px 10px;
-	margin: 50px auto 15px auto;
-	border: 0;
-	background: transparent;
-	color: rgba(97, 178, 249, 1);
-	border-radius: 5px;
-	font-size: 32px;
-	text-align: center;
-	border: 2px solid transparent;
-`
-
-const PrimaryButton = styled("div")`
-	width: 80%;
-	padding: 30px 10px;
-	margin: 50px auto 15px auto;
-	border: 0;
-	background: rgba(97, 178, 249, 1);
-	color: rgba(40, 64, 91, 1);
-	border-radius: 5px;
-	font-size: 32px;
-	text-align: center;
-	border: 2px solid transparent;
-	box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
-
-	${props =>
-		props.disabled &&
-		`
-		background: transparent;
-		border: 2px solid #ccc;
-		color: #ccc;
-	`};
 `
 
 class Form extends PureComponent {
@@ -105,6 +72,7 @@ class Form extends PureComponent {
 	handleSubmit = async () => {
 		this.setState({ isSubmitting: true })
 
+		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
 		const duration = this.state.appointment.services.reduce((acc, id) => {
 			return acc + this.allServices[id].duration
 		}, 0)
@@ -125,15 +93,43 @@ class Form extends PureComponent {
 
 			const customerId = CreateCustomer.customer.id
 
-			const lastAppt = this.props.appointments[this.props.appointments.length - 1]
+			// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the employe there since theres room for the appointment.
+
+			// sort by startTime so appointments are in the order of which they occur
+			const sortedAppointments = [...this.props.appointments].sort(
+				(a, b) => new Date(a.startTime) - new Date(b.startTime)
+			)
+
+			const lastAppt = sortedAppointments.find((appointment, index) => {
+				if (index === sortedAppointments.length - 1) return true
+
+				const next = sortedAppointments[index + 1]
+
+				if (isBefore(addMinutes(appointment.endTime, duration + 4), next.startTime)) {
+					console.log("found it", appointment.endTime, next.startTime, duration)
+					return true
+				}
+			})
+
 			const now = new Date()
 			const checkInTime = format(now, DB_DATE_STRING)
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
-				lastAppt && (lastAppt.status !== "completed" || isAfter(lastAppt.endTime, now))
-					? addMinutes(lastAppt.endTime, 2)
-					: checkInTime
+				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 4))
+					? checkInTime
+					: format(addMinutes(lastAppt.endTime, 2), DB_DATE_STRING)
+
+			const endTime = format(addMinutes(startTime, duration), DB_DATE_STRING)
+
+			console.log({
+				input: {
+					...this.state.appointment,
+					startTime,
+					endTime,
+					customerId
+				}
+			})
 
 			const {
 				data: { upsertAppointment }
@@ -143,7 +139,7 @@ class Form extends PureComponent {
 					input: {
 						...this.state.appointment,
 						startTime,
-						endTime: format(addMinutes(startTime, duration), DB_DATE_STRING),
+						endTime,
 						customerId
 					}
 				}
@@ -153,6 +149,7 @@ class Form extends PureComponent {
 				throw new Error("Failed to create the appointment. Please see the receptionist.")
 			}
 
+			// show the Finished route and pass the appointment as route state so we can show the estimated start time
 			this.props.history.push({
 				pathname: "/finished",
 				appointment: upsertAppointment.appointment
@@ -194,6 +191,16 @@ class Form extends PureComponent {
 		this.setState({ page: this.state.page - 1 })
 	}
 
+	handleNextButton = () => {
+		if (this.state.isSubmitting) return
+
+		if (this.state.page === 1) {
+			this.incrementPage()
+		} else {
+			this.handleSubmit()
+		}
+	}
+
 	render() {
 		const buttonDisabled =
 			this.state.page === 1 ? this.state.customer.firstName.length === 0 : this.state.appointment.services.length === 0
@@ -215,26 +222,13 @@ class Form extends PureComponent {
 						/>
 					)}
 
-					<div className="buttons">
-						{!buttonDisabled && (
-							<PrimaryButton
-								submitting={this.state.isSubmitting}
-								onClick={e => {
-									if (this.state.isSubmitting) return
-
-									if (this.state.page === 1) {
-										this.incrementPage()
-									} else {
-										this.handleSubmit()
-									}
-								}}
-							>
-								{this.state.isSubmitting && <div className="loader" />}
-								{this.state.page === 1 ? "NEXT" : "CHECK IN"}
-							</PrimaryButton>
-						)}
-						<SecondaryButton onClick={this.decrementPage}>BACK</SecondaryButton>
-					</div>
+					<FormButtons
+						disabled={buttonDisabled}
+						submitting={this.state.isSubmitting}
+						page={this.state.page}
+						onNextButtonClick={this.handleNextButton}
+						onBackButtonClick={this.decrementPage}
+					/>
 				</Content>
 			</Wrapper>
 		)

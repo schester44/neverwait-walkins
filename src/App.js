@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
+import { hot } from "react-hot-loader"
 
 import { Query } from "react-apollo"
 import { isAuthenticated } from "./graphql/utils"
@@ -11,6 +12,8 @@ import MultiResourceHomeView from "./modules/home/views/MultiResource"
 import Form from "./modules/signin/views/FormView"
 import Finished from "./modules/signin/views/FinishedView"
 import GuestRoute from "./components/GuestRoute"
+
+
 
 const MainRoutes = ({ children }) => {
 	const authed = isAuthenticated()
@@ -134,4 +137,4 @@ class App extends Component {
 	}
 }
 
-export default App
+export default hot(module)(App)
