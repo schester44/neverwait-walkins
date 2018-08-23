@@ -13,8 +13,6 @@ import Form from "./modules/signin/views/FormView"
 import Finished from "./modules/signin/views/FinishedView"
 import GuestRoute from "./components/GuestRoute"
 
-
-
 const MainRoutes = ({ children }) => {
 	const authed = isAuthenticated()
 
@@ -26,13 +24,14 @@ const MainRoutes = ({ children }) => {
 	const startTime = new Date()
 	startTime.setHours(0, 0, 0, 0).toString()
 
+	// TODO: There is a bug where an appointment can be booked at 11:50pm but it won't be returned since its end time will be 00:10
 	const endTime = new Date()
 	endTime.setHours(23, 59, 59, 0).toString()
 
 	return (
 		<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
-			{({ loading, data, error, subscribeToMore }) => {
-				if (loading) return <div>LOADING</div>
+			{({ loading, data, subscribeToMore }) => {
+				if (loading) return <div>LOADING SERVER DATA</div>
 
 				// TODO: This may need work.
 				if (!data.location) {

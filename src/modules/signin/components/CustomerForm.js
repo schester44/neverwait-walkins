@@ -23,10 +23,8 @@ const Wrapper = styled("div")`
 
 	.form {
 		width: 90%;
-		background: rgba(69, 69, 82, 1);
 		padding: 20px 40px;
 		border-radius: 5px;
-		box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
 	}
 
 	.form-input {

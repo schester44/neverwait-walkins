@@ -56,14 +56,21 @@ const Button = styled("button")`
 	padding: 30px 10px;
 	margin: 50px auto 15px auto;
 	border: 0;
-	background: rgba(97, 178, 249, 1);
-	color: rgba(40, 64, 91, 1);
+	background: rgba(244, 37, 49, 1);
+	color: white;
 	border-radius: 5px;
 	font-size: 32px;
 	text-align: center;
 	border: 2px solid transparent;
-	box-shadow: 0px 2px 10px rgba(32, 32, 32, 0.5);
 `
+
+const vowels = {
+	a: true,
+	e: true,
+	i: true,
+	o: true,
+	u: true
+}
 
 class Finished extends PureComponent {
 	componentDidMount() {
@@ -95,7 +102,9 @@ class Finished extends PureComponent {
 				<Content>
 					<div className="body">
 						<h1>
-							You have created a {appointment.services[0].name} appointment with {appointment.employee.firstName}.
+							You have created
+							{vowels[appointment.services[0].name.charAt(0).toLowerCase()] ? " an " : " a "}
+							{appointment.services[0].name} appointment with {appointment.employee.firstName}.
 						</h1>
 
 						<p style={{ marginBottom: 50, color: "white" }}>

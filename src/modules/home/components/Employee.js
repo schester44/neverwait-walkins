@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { isBefore, differenceInMinutes } from "date-fns"
+import { isBefore, differenceInMinutes, subMinutes, addMinutes } from "date-fns"
 import memoize from "memoize-one"
 
 const Wrapper = styled("div")`
@@ -55,10 +55,14 @@ const Wrapper = styled("div")`
 		}
 
 		h1 {
-			font-size: 5em;
+			font-size: 7em;
 			font-weight: 700;
-			text-transform: uppercase;
 			line-height: 1.5;
+
+			.small {
+				font-size: 0.5em;
+				opacity: 0.8;
+			}
 		}
 	}
 
@@ -67,31 +71,43 @@ const Wrapper = styled("div")`
 		width: 100%;
 		padding: 30px 10px;
 		border: 0;
-		background: rgba(97, 178, 249, 1);
-		color: rgba(40, 64, 91, 1);
+		background: rgba(244, 37, 49, 1);
+		color: white;
 		border-radius: 5px;
 		font-size: 32px;
 	}
 `
 
-
 // TODO: Find the first N minute gap. thats when there is an opening available.
 const generateWaitTime = memoize(appointments => {
 	const now = new Date()
 
-	return appointments.reduce((acc, appt) => {
-		// filter out appointments that have ended
-		if (isBefore(appt.endTime, now) || appt.status === "completed") {
-			return acc
+	// sort by startTime so appointments are in the order of which they occur
+	const sortedAppointments = [...appointments].sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+
+	const lastAppt = sortedAppointments.find((appointment, index) => {
+		const next = sortedAppointments[index + 1]
+
+		// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
+		if (isBefore(appointment.endTime, subMinutes(now, 2))) {
+			return false
 		}
 
-		// appointment is in progress so don't add its entire duration, just calculate how much time is left
-		if (isBefore(appt.startTime, now)) {
-			return acc + differenceInMinutes(appt.endTime, now)
+		if (!next && isBefore(now, appointment.endTime)) {
+			return true
 		}
 
-		return acc + appt.duration
-	}, 0)
+		// We're adding 15 + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
+		if (next && isBefore(addMinutes(appointment.endTime, 15 + 4), next.startTime)) {
+			console.log(appointment.endTime, now, isBefore(appointment.endTime, subMinutes(now, 2)))
+			console.log("found it", appointment.endTime, next.startTime, 15)
+			return true
+		}
+	})
+
+	if (!lastAppt) return 0
+
+	return differenceInMinutes(lastAppt.endTime, now)
 })
 
 const timeFragmentsFromMinutes = memoize(mins => {
@@ -149,7 +165,19 @@ class Employee extends React.Component {
 					{this.state.waitTime < 5 ? (
 						<h1>No Wait</h1>
 					) : (
-						<h1>{time.hours > 0 ? `${time.hours}hr ${time.minutes}mins` : `${time.minutes} mins`}</h1>
+						<h1>
+							{time.hours > 0 ? (
+								<span>
+									{time.hours}
+									<span className="small">hr</span> {time.minutes}
+									<span className="small">min</span>
+								</span>
+							) : (
+								<span>
+									{time.minutes} <span className="small">m</span>
+								</span>
+							)}
+						</h1>
 					)}
 				</div>
 				<button className="signin-btn" onClick={onClick}>
