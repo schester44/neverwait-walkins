@@ -92,7 +92,7 @@ class Form extends PureComponent {
 
 			const customerId = CreateCustomer.customer.id
 			const now = new Date()
-			const checkInTime = format(now, DB_DATE_STRING)
+			const checkInTime = format(now)
 
 			// sort by startTime so appointments are in the order of which they occur
 			const sortedAppointments = [...this.props.appointments].sort(
@@ -125,9 +125,9 @@ class Form extends PureComponent {
 			const startTime =
 				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 4))
 					? checkInTime
-					: format(addMinutes(lastAppt.endTime, 2), DB_DATE_STRING)
+					: format(addMinutes(lastAppt.endTime, 2))
 
-			const endTime = format(addMinutes(startTime, duration), DB_DATE_STRING)
+			const endTime = format(addMinutes(startTime, duration))
 
 			console.log({
 				input: {
