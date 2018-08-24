@@ -82,7 +82,9 @@ const waitTimeInMinutes = appointments => {
 	const now = new Date()
 
 	// sort by startTime so appointments are in the order of which they occur
-	const sortedAppointments = [...appointments].sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+	const sortedAppointments = [...appointments]
+		.filter(({ status }) => status !== "completed")
+		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
 	// Last appointment is used to generate the current wait time. If the appointment is in the past then it shouldn't be considered as the lastAppointment since we don't want to create appointments in the past and we can just use the current time instead.
 	const lastAppt = sortedAppointments.find((appointment, index) => {

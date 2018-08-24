@@ -39,6 +39,8 @@ const MainRoutes = ({ children }) => {
 					return <Redirect to="/" />
 				}
 
+				console.log("RENDER")
+
 				if (!this.unsub) {
 					this.unsub = subscribeToMore({
 						document: APPOINTMENTS_SUBSCRIPTION,
@@ -46,6 +48,8 @@ const MainRoutes = ({ children }) => {
 							locationId: data.location.id
 						},
 						updateQuery: (prev, { subscriptionData }) => {
+							console.log("UPDATE QUERY")
+
 							if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
 
 							const appointment = subscriptionData.data.AppointmentsChange.appointment
@@ -67,11 +71,15 @@ const MainRoutes = ({ children }) => {
 								? employee.appointments.map(app => (+app.id === +appointment.id ? appointment : app))
 								: [...employee.appointments, appointment]
 
+							console.log(appointment)
+							console.log(appointments)
+
 							return {
 								...prev,
 								location: {
 									...prev.location,
 									employees: prev.location.employees.map(employee => {
+										console.log(+employee.id === +employeeId ? "returning new appointments" : "old emp")
 										return +employee.id === +employeeId
 											? {
 													...employee,
@@ -106,6 +114,7 @@ class App extends Component {
 										render={props => {
 											const employees = location.employees.filter(emp => emp.services.length > 0)
 
+											console.log({ employees });
 											return <MultiResourceHomeView employees={employees} location={location} />
 										}}
 									/>
