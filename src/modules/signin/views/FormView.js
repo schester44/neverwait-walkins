@@ -95,7 +95,7 @@ class Form extends PureComponent {
 
 			// sort by startTime so appointments are in the order of which they occur
 			const sortedAppointments = [...this.props.appointments]
-				.filter(appointment => appointment.status !== "completed")
+				.filter(({ status }) => status !== "completed" && status !== "deleted")
 				.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
 			const lastAppt = sortedAppointments.find((appointment, index) => {

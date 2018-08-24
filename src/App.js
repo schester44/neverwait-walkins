@@ -114,7 +114,6 @@ class App extends Component {
 										render={props => {
 											const employees = location.employees.filter(emp => emp.services.length > 0)
 
-											console.log({ employees });
 											return <MultiResourceHomeView employees={employees} location={location} />
 										}}
 									/>
