@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { isBefore, differenceInMinutes, subMinutes, addMinutes } from "date-fns"
+import { isBefore, differenceInMinutes, subMinutes, addMinutes, isAfter } from "date-fns"
 import memoize from "memoize-one"
 
 const Wrapper = styled("div")`
@@ -87,32 +87,35 @@ const waitTimeInMinutes = appointments => {
 
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
-	// Last appointment is used to generate the current wait time. If the appointment is in the past then it shouldn't be considered as the lastAppointment since we don't want to create appointments in the past and we can just use the current time instead.
-	const lastAppt = sortedAppointments.find((appointment, index) => {
-		const next = sortedAppointments[index + 1]
+	let index = undefined
 
-		// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
-		if (isBefore(appointment.endTime, subMinutes(now, 2))) {
-			return false
+	for (let i = 0; i < sortedAppointments.length; i++) {
+		const current = sortedAppointments[i]
+
+		if (i === 0 && isBefore(addMinutes(now, 20), current.startTime)) {
+			break
 		}
 
-		if (!next && isBefore(now, appointment.endTime)) {
-			return true
+		const difference = differenceInMinutes(
+			current.startTime,
+			sortedAppointments[i - 1] ? sortedAppointments[i - 1].endTime : now
+		)
+
+		if (difference > 20) {
+			index = i - 1
+			break;
+		} else {
+			index = i
 		}
-
-		// We're adding 15 + 2 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 2 minutes. We should insert the appointment since theres room for the appointment.
-		if (next && isBefore(addMinutes(appointment.endTime, 15 + 2), next.startTime)) {
-			return true
-		}
-
-		return false
-	})
-
-	if (!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2))) {
-		return 0
 	}
 
-	return differenceInMinutes(lastAppt.endTime, now)
+	console.log({ index })
+
+	if (!isNaN(index)) {
+		return differenceInMinutes(sortedAppointments[index].endTime, now)
+	}
+
+	return 0
 }
 
 const timeFragmentsFromMinutes = memoize(mins => {

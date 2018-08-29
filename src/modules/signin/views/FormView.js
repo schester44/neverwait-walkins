@@ -6,6 +6,7 @@ import { withApollo } from "react-apollo"
 
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
+import differenceInMinutes from "date-fns/difference_in_minutes"
 
 import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 
@@ -98,25 +99,29 @@ class Form extends PureComponent {
 				.filter(({ status }) => status !== "completed" && status !== "deleted")
 				.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
-			const lastAppt = sortedAppointments.find((appointment, index) => {
-				const next = sortedAppointments[index + 1]
+			let index = undefined
 
-				if (!next && isBefore(now, appointment.endTime)) {
-					return true
+			for (let i = 0; i < sortedAppointments.length; i++) {
+				const current = sortedAppointments[i]
+
+				if (i === 0 && isBefore(addMinutes(now, 20), current.startTime)) {
+					break
 				}
 
-				// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
-				if (isBefore(appointment.endTime, subMinutes(now, 2))) {
-					return false
-				}
+				const difference = differenceInMinutes(
+					current.startTime,
+					sortedAppointments[i - 1] ? sortedAppointments[i - 1].endTime : now
+				)
 
-				// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
-				if (next && isBefore(addMinutes(appointment.endTime, duration + 4), next.startTime)) {
-					return true
+				if (difference > 20) {
+					index = i - 1
+					break
+				} else {
+					index = i
 				}
+			}
 
-				return false
-			})
+			const lastAppt = !isNaN(index) ? sortedAppointments[index] : undefined
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
