@@ -101,19 +101,13 @@ class Form extends PureComponent {
 			const lastAppt = sortedAppointments.find((appointment, index) => {
 				const next = sortedAppointments[index + 1]
 
+				if (!next && isBefore(now, appointment.endTime)) {
+					return true
+				}
+
 				// if the appointment's end time is before now, AKA it has already ended then don't consider it the last appointment.
 				if (isBefore(appointment.endTime, subMinutes(now, 2))) {
 					return false
-				}
-
-				// either theres only one appointment, or this is the last appointment in the list
-				if (!next && isBefore(now, appointment.endTime)) {
-					// Add twenty minutes to the current time. Are we still before the appointment? Then lets return false since its obviously not an accurate wait time.-
-					if (isBefore(addMinutes(now, 22), appointment.startTime)) {
-						return false
-					}
-
-					return true
 				}
 
 				// We're adding duration + 4 minutes to each appointments endTime. if the new endTime is before the next appointments start time then we can assume there is a gap of at least N + 4 minutes. We should insert the appointment since theres room for the appointment.
@@ -126,7 +120,7 @@ class Form extends PureComponent {
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
-				!lastAppt || isBefore(addMinutes(now, 20), lastAppt.startTime)
+				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2))
 					? checkInTime
 					: format(addMinutes(lastAppt.endTime, 2))
 

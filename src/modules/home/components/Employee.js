@@ -96,12 +96,7 @@ const waitTimeInMinutes = appointments => {
 			return false
 		}
 
-		// either theres only one appointment, or this is the last appointment in the list
 		if (!next && isBefore(now, appointment.endTime)) {
-			// Add twenty minutes to the current time. Are we still before the appointment? Then lets return false since its obviously not an accurate wait time.-
-			if (isBefore(addMinutes(now, 20), appointment.startTime)) {
-				return false
-			}
 			return true
 		}
 
@@ -113,7 +108,7 @@ const waitTimeInMinutes = appointments => {
 		return false
 	})
 
-	if (!lastAppt || isBefore(addMinutes(now, 20), lastAppt.startTime)) {
+	if (!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2))) {
 		return 0
 	}
 

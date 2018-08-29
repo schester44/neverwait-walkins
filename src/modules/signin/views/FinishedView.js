@@ -9,6 +9,16 @@ const Wrapper = styled("div")`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	padding: 0 20px;
+
+	.estimated-time {
+		margin-bottom: 50px;
+		color: white;
+
+		span {
+			color: red;
+		}
+	}
 `
 
 const Header = styled("div")`
@@ -52,7 +62,7 @@ const Content = styled("div")`
 `
 
 const Button = styled("button")`
-	width: 80%;
+	width: 100%;
 	padding: 30px 10px;
 	margin: 50px auto 15px auto;
 	border: 0;
@@ -76,7 +86,7 @@ class Finished extends PureComponent {
 	componentDidMount() {
 		this.timeout = window.setTimeout(() => {
 			this.props.history.push("/")
-		}, 20000)
+		}, 30000)
 	}
 
 	componentWillUnmount() {
@@ -100,15 +110,15 @@ class Finished extends PureComponent {
 
 				<Content>
 					<div className="body">
-						<h1>
+						<p>
 							You have created
 							{vowels[appointment.services[0].name.charAt(0).toLowerCase()] ? " an " : " a "}
 							{appointment.services[0].name} appointment with {appointment.employee.firstName}.
-						</h1>
-
-						<p style={{ marginBottom: 50, color: "white" }}>
-							You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.
 						</p>
+
+						<h1 style={{ marginBottom: 50, color: "white" }}>
+							You can expect to be in the chair around: {format(appointment.startTime, "h:mma")}.
+						</h1>
 
 						{/*  -- this isn't completely accurate and displays a longer wait time then it should. TODO: Find more accurate distanceInWords function
 						
