@@ -102,6 +102,7 @@ const waitTimeInMinutes = appointments => {
 			if (isBefore(addMinutes(now, 20), appointment.startTime)) {
 				return false
 			}
+			
 			return true
 		}
 
