@@ -153,8 +153,7 @@ class Form extends PureComponent {
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
 			this.props.history.push({
 				pathname: "/finished",
-				appointment: upsertAppointment.appointment,
-				customerId
+				appointment: upsertAppointment.appointment
 			})
 		} catch (error) {
 			console.log("error", error)

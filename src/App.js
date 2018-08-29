@@ -133,7 +133,7 @@ class App extends Component {
 											)
 										}}
 									/>
-									<Route path="/finished" locationId={location.id} component={Finished} />
+									<Route path="/finished" component={Finished} />
 								</React.Fragment>
 							)
 						}}

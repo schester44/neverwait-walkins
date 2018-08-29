@@ -5,7 +5,7 @@ import { onlyUpdateForKeys } from "recompose"
 const Wrapper = styled("div")`
 	width: 100%;
 	text-align: left;
-	margin-bottom: 25px;
+	margin-bottom: 50px;
 	position: relative;
 
 	label {

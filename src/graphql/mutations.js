@@ -13,21 +13,6 @@ export const CREATE_CUSTOMER = gql`
 	}
 `
 
-export const UPDATE_CUSTOMER = gql`
-	mutation update($input: UpdateCustomerInput!) {
-		UpdateCustomer(input: $input) {
-			ok
-			customer {
-				id
-				contactNumber
-			}
-			errors {
-				message
-			}
-		}
-	}
-`
-
 export const UPSERT_APPOINTMENT = gql`
 	mutation upsert($input: AppointmentInput!) {
 		upsertAppointment(input: $input) {
