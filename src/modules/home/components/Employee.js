@@ -83,7 +83,7 @@ const waitTimeInMinutes = appointments => {
 
 	// sort by startTime so appointments are in the order of which they occur
 	const sortedAppointments = [...appointments]
-		.filter(({ status }) => status !== "completed" && status !== "deleted")
+		.filter(({ status, endTime }) => (status !== "completed" && status !== "deleted") || isBefore(endTime, now))
 
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
@@ -113,7 +113,9 @@ const waitTimeInMinutes = appointments => {
 		return false
 	})
 
-	console.log(lastAppt)
+	if (isBefore(addMinutes(now, 20), lastAppt.startTime)) {
+		return 0
+	}
 
 	if (!lastAppt) return 0
 	return differenceInMinutes(lastAppt.endTime, now)
