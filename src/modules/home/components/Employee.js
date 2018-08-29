@@ -113,11 +113,10 @@ const waitTimeInMinutes = appointments => {
 		return false
 	})
 
-	if (isBefore(addMinutes(now, 20), lastAppt.startTime)) {
+	if (!lastAppt || isBefore(addMinutes(now, 20), lastAppt.startTime)) {
 		return 0
 	}
 
-	if (!lastAppt) return 0
 	return differenceInMinutes(lastAppt.endTime, now)
 }
 
