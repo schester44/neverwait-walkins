@@ -126,7 +126,7 @@ class Form extends PureComponent {
 
 			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
 			const startTime =
-				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2))
+				!lastAppt || isBefore(addMinutes(now, 20), lastAppt.startTime)
 					? checkInTime
 					: format(addMinutes(lastAppt.endTime, 2))
 
