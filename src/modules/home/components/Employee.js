@@ -79,19 +79,18 @@ const Wrapper = styled("div")`
 `
 
 const waitTimeInMinutes = appointments => {
+	let index = undefined
 	const now = new Date()
 
-	// sort by startTime so appointments are in the order of which they occur
 	const sortedAppointments = [...appointments]
-		.filter(({ status, endTime }) => (status !== "completed" && status !== "deleted") || isBefore(endTime, now))
-
+		.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
-	let index = undefined
 
 	for (let i = 0; i < sortedAppointments.length; i++) {
 		const current = sortedAppointments[i]
 
+		// if the first event is more than 20 minutes away then break because theres room for an appointment.
 		if (i === 0 && isBefore(addMinutes(now, 20), current.startTime)) {
 			break
 		}
@@ -101,15 +100,14 @@ const waitTimeInMinutes = appointments => {
 			sortedAppointments[i - 1] ? sortedAppointments[i - 1].endTime : now
 		)
 
+		// if the difference between the current appointment is more than 20 minutes from the last appointment, then set the last appointment as the last appointment. else set the current appointment as the last appointment.
 		if (difference > 20) {
 			index = i - 1
-			break;
+			break
 		} else {
 			index = i
 		}
 	}
-
-	console.log({ index })
 
 	if (!isNaN(index)) {
 		return differenceInMinutes(sortedAppointments[index].endTime, now)

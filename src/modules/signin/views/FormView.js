@@ -13,7 +13,7 @@ import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
 import ServiceSelector from "../components/ServiceSelector"
 import CustomerForm from "../components/CustomerForm"
 import FormButtons from "../components/FormButtons"
-import { isBefore, subMinutes } from "date-fns"
+import { isBefore, subMinutes, isAfter } from "date-fns"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -96,7 +96,7 @@ class Form extends PureComponent {
 
 			// sort by startTime so appointments are in the order of which they occur
 			const sortedAppointments = [...this.props.appointments]
-				.filter(({ status }) => status !== "completed" && status !== "deleted")
+				.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
 				.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
 			let index = undefined
