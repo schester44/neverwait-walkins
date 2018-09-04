@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { isBefore, differenceInMinutes, subMinutes, addMinutes, isAfter } from "date-fns"
+import { isBefore, differenceInMinutes, addMinutes, isAfter } from "date-fns"
 import memoize from "memoize-one"
 
 const Wrapper = styled("div")`
@@ -78,15 +78,15 @@ const Wrapper = styled("div")`
 	}
 `
 
-const waitTimeInMinutes = appointments => {
+const waitTimeInMinutes = (appointments = [], blockedTimes = []) => {
 	let index = undefined
 	const now = new Date()
 
-	const sortedAppointments = [...appointments]
+	const sortedAppointments = [...appointments, ...blockedTimes]
 		.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
-
+	console.log(sortedAppointments);
 	for (let i = 0; i < sortedAppointments.length; i++) {
 		const current = sortedAppointments[i]
 
@@ -129,7 +129,7 @@ class Employee extends React.Component {
 	}
 
 	static getDerivedStateFromProps(nextProps, prevState) {
-		const waitTime = waitTimeInMinutes(nextProps.employee.appointments)
+		const waitTime = waitTimeInMinutes(nextProps.employee.appointments, nextProps.employee.blockedTimes)
 
 		if (waitTime !== prevState.waitTime) {
 			return { waitTime }
@@ -140,9 +140,7 @@ class Employee extends React.Component {
 
 	componentDidMount() {
 		this.timer = window.setInterval(() => {
-			this.setState({
-				waitTime: waitTimeInMinutes(this.props.employee.appointments)
-			})
+			this.setState({ waitTime: waitTimeInMinutes(this.props.employee.appointments, this.props.employee.blockedTimes) })
 		}, 60000)
 	}
 
