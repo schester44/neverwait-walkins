@@ -1,6 +1,6 @@
 {
 	"name": "freshcut-checkin-app",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"private": true,
 	"dependencies": {
 		"apollo-cache-inmemory": "^1.2.4",
