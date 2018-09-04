@@ -4,7 +4,7 @@ import { hot } from "react-hot-loader"
 
 import { Query } from "react-apollo"
 import { isAuthenticated } from "./graphql/utils"
-import { APPOINTMENTS_SUBSCRIPTION } from "./graphql/subscriptions"
+import { appointmentsSubscription, blockedTimesSubscription } from "./graphql/subscriptions"
 import { LOCATION_QUERY } from "./graphql/queries"
 
 import Auth from "./modules/auth/views/AuthView"
@@ -52,6 +52,63 @@ class MainRoutes extends React.Component {
 		}
 	}
 
+	subscribe = (locationId, subscribeToMore) => {
+		this.unsub = subscribeToMore({
+			document: appointmentsSubscription,
+			variables: { locationId },
+			updateQuery: this.onAppointmentUpdate
+		})
+
+		subscribeToMore({
+			document: blockedTimesSubscription,
+			variables: { locationId },
+			updateQuery: this.onBlockedTimeUpdate
+		})
+	}
+
+	onBlockedTimeUpdate = (prev, { subscriptionData }) => {
+		if (!subscriptionData.data || !subscriptionData.data.BlockedTimeChange) return
+
+		const { blockedTime, deleted, employeeId } = subscriptionData.data.BlockedTimeChange
+
+		const employee = prev.location.employees.find(emp => +emp.id === +employeeId)
+
+		if (!employee) {
+			console.log(`[ERROR]: No employee with that ID ${employeeId}`)
+			return false
+		}
+
+		const timedById = employee.blockedTimes.reduce((acc, curr) => {
+			acc[curr.id] = curr
+			return acc
+		}, {})
+
+		const blockedTimes = deleted
+			? //delete
+			  employee.blockedTimes.filter(({ id }) => +id !== +blockedTime.id)
+			: timedById[blockedTime.id]
+				? // update
+				  employee.blockedTimes.map(time => (+time.id === +blockedTime.id ? blockedTime : time))
+				: // insert
+				  [...employee.blockedTimes, blockedTime]
+
+		return {
+			...prev,
+			location: {
+				...prev.location,
+				employees: prev.location.employees.map(
+					employee =>
+						+employee.id === +employeeId
+							? {
+									...employee,
+									blockedTimes
+							  }
+							: employee
+				)
+			}
+		}
+	}
+
 	render() {
 		if (!isAuthenticated()) {
 			return <Redirect to={{ pathname: "/auth" }} />
@@ -77,13 +134,7 @@ class MainRoutes extends React.Component {
 					}
 
 					if (!this.unsub) {
-						this.unsub = subscribeToMore({
-							document: APPOINTMENTS_SUBSCRIPTION,
-							variables: {
-								locationId: data.location.id
-							},
-							updateQuery: this.onAppointmentUpdate
-						})
+						this.subscribe(data.location.id, subscribeToMore)
 					}
 
 					return this.props.children({ location: data.location })

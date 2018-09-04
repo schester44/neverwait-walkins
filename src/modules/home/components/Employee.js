@@ -85,8 +85,7 @@ const waitTimeInMinutes = (appointments = [], blockedTimes = []) => {
 	const sortedAppointments = [...appointments, ...blockedTimes]
 		.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
-
-	console.log(sortedAppointments);
+	
 	for (let i = 0; i < sortedAppointments.length; i++) {
 		const current = sortedAppointments[i]
 
