@@ -145,6 +145,31 @@ class MainRoutes extends React.Component {
 }
 
 class App extends Component {
+	constructor() {
+		super()
+
+		this.handleClicks = this.handleClicks.bind(this)
+	}
+
+	componentDidMount() {
+		document.addEventListener("click", this.handleClicks)
+	}
+
+	handleClicks(evt) {
+		if (evt.target.className === "input-wrapper") return
+
+		document.activeElement.blur()
+		const inputs = document.querySelectorAll("input")
+
+		for (var i = 0; i < inputs.length; i++) {
+			inputs[i].blur()
+		}
+	}
+
+	componentWillUnmount() {
+		document.removeEventListener("click", this.handleClicks)
+	}
+
 	render() {
 		return (
 			<Router>
