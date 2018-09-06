@@ -140,7 +140,9 @@ class Form extends PureComponent {
 						...this.state.appointment,
 						startTime,
 						endTime,
-						customerId
+						customerId,
+						// Prevent incrementing the totalBookings count of a customer. we need a better way to handle this one.
+						incrementCustomerBookingCount: false
 					}
 				}
 			})
