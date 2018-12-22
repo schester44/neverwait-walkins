@@ -17,6 +17,7 @@ const Wrapper = styled("div")`
 			padding-top: 80px;
 			font-size: 120px;
 			line-height: 1;
+			color: rgba(242, 209, 116, 1.0);
 		}
 	}
 `

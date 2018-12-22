@@ -1,217 +1,76 @@
-import React, { Component } from "react"
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom"
-import { hot } from "react-hot-loader"
+import React, { useEffect } from "react"
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 
-import { Query } from "react-apollo"
-import { isAuthenticated } from "./graphql/utils"
-import { appointmentsSubscription, blockedTimesSubscription } from "./graphql/subscriptions"
-import { LOCATION_QUERY } from "./graphql/queries"
+import Auth from "./views/AuthView"
+import MultiResourceHomeView from "./views/CheckInScreen"
 
-import Auth from "./modules/auth/views/AuthView"
-import MultiResourceHomeView from "./modules/home/views/MultiResource"
-import Form from "./modules/signin/views/FormView"
+import Form from "./views/Form/RootContainer"
 import Finished from "./modules/signin/views/FinishedView"
+
+import AuthenticatedRoutes from "./components/AuthenticatedRoutes"
 import GuestRoute from "./components/GuestRoute"
 
-class MainRoutes extends React.Component {
-	onAppointmentUpdate = (prev, { subscriptionData }) => {
-		if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
+const App = () => {
+	useEffect(() => {
+		const handleClickEvents = event => {
+			if (event.target.className === "input-wrapper") return
 
-		const { appointment, employeeId } = subscriptionData.data.AppointmentsChange
+			document.activeElement.blur()
 
-		const employee = prev.location.employees.find(emp => +emp.id === +employeeId)
+			const inputs = document.querySelectorAll("input")
 
-		if (!employee) {
-			console.log(`[ERROR]: No employee with that ID ${employeeId}`)
-			return false
-		}
-
-		const appointmentsById = employee.appointments.reduce((acc, curr) => {
-			acc[curr.id] = curr
-			return acc
-		}, {})
-
-		const appointments = appointmentsById[appointment.id]
-			? employee.appointments.map(app => (+app.id === +appointment.id ? appointment : app))
-			: [...employee.appointments, appointment]
-
-		return {
-			...prev,
-			location: {
-				...prev.location,
-				employees: prev.location.employees.map(
-					employee =>
-						+employee.id === +employeeId
-							? {
-									...employee,
-									appointments
-							  }
-							: employee
-				)
+			for (var i = 0; i < inputs.length; i++) {
+				inputs[i].blur()
 			}
 		}
-	}
 
-	subscribe = (locationId, subscribeToMore) => {
-		this.unsub = subscribeToMore({
-			document: appointmentsSubscription,
-			variables: { locationId },
-			updateQuery: this.onAppointmentUpdate
-		})
+		document.addEventListener("click", handleClickEvents)
 
-		subscribeToMore({
-			document: blockedTimesSubscription,
-			variables: { locationId },
-			updateQuery: this.onBlockedTimeUpdate
-		})
-	}
-
-	onBlockedTimeUpdate = (prev, { subscriptionData }) => {
-		if (!subscriptionData.data || !subscriptionData.data.BlockedTimeChange) return
-
-		const { blockedTime, deleted, employeeId } = subscriptionData.data.BlockedTimeChange
-
-		const employee = prev.location.employees.find(emp => +emp.id === +employeeId)
-
-		if (!employee) {
-			console.log(`[ERROR]: No employee with that ID ${employeeId}`)
-			return false
+		return () => {
+			document.removeEventListener("click", handleClickEvents)
 		}
+	}, [])
 
-		const timedById = employee.blockedTimes.reduce((acc, curr) => {
-			acc[curr.id] = curr
-			return acc
-		}, {})
+	return (
+		<Router>
+			<Switch>
+				<GuestRoute path="/auth" component={Auth} />
+				<AuthenticatedRoutes>
+					{({ location }) => {
+						return (
+							<React.Fragment>
+								<Route
+									exact
+									path="/"
+									render={props => {
+										const employees = location.employees.filter(emp => emp.services.length > 0)
+										return <MultiResourceHomeView employees={employees} location={location} />
+									}}
+								/>
 
-		const blockedTimes = deleted
-			? //delete
-			  employee.blockedTimes.filter(({ id }) => +id !== +blockedTime.id)
-			: timedById[blockedTime.id]
-				? // update
-				  employee.blockedTimes.map(time => (+time.id === +blockedTime.id ? blockedTime : time))
-				: // insert
-				  [...employee.blockedTimes, blockedTime]
-
-		return {
-			...prev,
-			location: {
-				...prev.location,
-				employees: prev.location.employees.map(
-					employee =>
-						+employee.id === +employeeId
-							? {
-									...employee,
-									blockedTimes
-							  }
-							: employee
-				)
-			}
-		}
-	}
-
-	render() {
-		if (!isAuthenticated()) {
-			return <Redirect to={{ pathname: "/auth" }} />
-		}
-
-		// Get all the events for today
-		const startTime = new Date()
-		startTime.setHours(0, 0, 0, 0).toString()
-
-		// TODO: There is a bug where an appointment can be booked at 11:50pm but it won't be returned since its end time will be 00:10
-		const endTime = new Date()
-		endTime.setHours(23, 59, 59, 0).toString()
-
-		return (
-			<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
-				{({ loading, data, subscribeToMore }) => {
-					if (loading) return <div>LOADING SERVER DATA</div>
-
-					// TODO: This may need work
-					if (!data.location) {
-						localStorage.removeItem("AuthToken")
-						return <Redirect to="/" />
-					}
-
-					if (!this.unsub) {
-						this.subscribe(data.location.id, subscribeToMore)
-					}
-
-					return this.props.children({ location: data.location })
-				}}
-			</Query>
-		)
-	}
+								<Route
+									path="/sign-in/:employeeId"
+									render={props => {
+										const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
+										return (
+											<Form
+												locationId={location.id}
+												employeeId={employee.id}
+												services={employee.services}
+												blockedTimes={employee.blockedTimes}
+												appointments={employee.appointments}
+											/>
+										)
+									}}
+								/>
+								<Route path="/finished" locationId={location.id} component={Finished} />
+							</React.Fragment>
+						)
+					}}
+				</AuthenticatedRoutes>
+			</Switch>
+		</Router>
+	)
 }
 
-class App extends Component {
-	constructor() {
-		super()
-
-		this.handleClicks = this.handleClicks.bind(this)
-	}
-
-	componentDidMount() {
-		document.addEventListener("click", this.handleClicks)
-	}
-
-	handleClicks(evt) {
-		if (evt.target.className === "input-wrapper") return
-
-		document.activeElement.blur()
-		const inputs = document.querySelectorAll("input")
-
-		for (var i = 0; i < inputs.length; i++) {
-			inputs[i].blur()
-		}
-	}
-
-	componentWillUnmount() {
-		document.removeEventListener("click", this.handleClicks)
-	}
-
-	render() {
-		return (
-			<Router>
-				<Switch>
-					<GuestRoute path="/auth" component={Auth} />
-					<MainRoutes>
-						{({ location }) => {
-							return (
-								<React.Fragment>
-									<Route
-										exact
-										path="/"
-										render={props => {
-											const employees = location.employees.filter(emp => emp.services.length > 0)
-											return <MultiResourceHomeView employees={employees} location={location} />
-										}}
-									/>
-
-									<Route
-										path="/sign-in/:employeeId"
-										render={props => {
-											const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
-											return (
-												<Form
-													locationId={location.id}
-													employeeId={employee.id}
-													services={employee.services}
-													blockedTimes={employee.blockedTimes}
-													appointments={employee.appointments}
-												/>
-											)
-										}}
-									/>
-									<Route path="/finished" locationId={location.id} component={Finished} />
-								</React.Fragment>
-							)
-						}}
-					</MainRoutes>
-				</Switch>
-			</Router>
-		)
-	}
-}
-
-export default hot(module)(App)
+export default App

@@ -7,13 +7,15 @@ import { withApollo } from "react-apollo"
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
 import differenceInMinutes from "date-fns/difference_in_minutes"
+import isBefore from "date-fns/is_before"
+import isAfter from "date-fns/is_after"
+import subMinutes from "date-fns/sub_minutes"
 
-import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../../graphql/mutations"
+import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../graphql/mutations"
 
-import ServiceSelector from "../components/ServiceSelector"
-import CustomerForm from "../components/CustomerForm"
-import FormButtons from "../components/FormButtons"
-import { isBefore, subMinutes, isAfter } from "date-fns"
+import ServiceSelector from "../../modules/signin/components/ServiceSelector"
+import CustomerForm from "../../modules/signin/components/CustomerForm"
+import FormButtons from "../../modules/signin/components/FormButtons"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -40,6 +42,7 @@ const Header = styled("div")`
 		padding-top: 20px;
 		font-family: marguerite;
 		font-size: 62px;
+		color: rgba(242, 209, 116, 1);
 	}
 `
 
