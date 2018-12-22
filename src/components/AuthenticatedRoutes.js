@@ -7,6 +7,7 @@ import { LOCATION_QUERY } from "../graphql/queries"
 import { isAuthenticated } from "../graphql/utils"
 
 import LoadingScreen from "./LoadingScreen"
+import { startOfDay, endOfDay } from "date-fns"
 
 class AuthenticatedRoutes extends React.Component {
 	onAppointmentUpdate = (prev, { subscriptionData }) => {
@@ -107,17 +108,8 @@ class AuthenticatedRoutes extends React.Component {
 			return <Redirect to={{ pathname: "/auth" }} />
 		}
 
-		console.log("Creating new date in App.js")
-		// Get all the events for today
-		const startTime = new Date()
-		startTime.setHours(0, 0, 0, 0).toString()
-
-		// TODO: There is a bug where an appointment can be booked at 11:50pm but it won't be returned since its end time will be 00:10
-		const endTime = new Date()
-		endTime.setHours(23, 59, 59, 0).toString()
-
 		return (
-			<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
+			<Query query={LOCATION_QUERY} variables={{ startTime: startOfDay(new Date()), endTime: endOfDay(new Date()) }}>
 				{({ loading, data, subscribeToMore }) => {
 					if (loading) return <LoadingScreen />
 

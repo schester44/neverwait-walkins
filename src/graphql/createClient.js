@@ -9,11 +9,9 @@ import { getMainDefinition } from "apollo-utilities"
 import { AUTH_TOKEN_KEY } from "../constants"
 import config from "../config"
 
-
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
-	
 	if (networkError) {
-		console.log('this device is offline...[TODO]: handle this error');
+		console.log("this device is offline...[TODO]: handle this error")
 	}
 
 	console.log({ graphQLErrors, networkError })

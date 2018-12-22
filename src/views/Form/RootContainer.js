@@ -7,7 +7,7 @@ import { withApollo } from "react-apollo"
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
 
-import { createCustomerMutation, upsertAppointmentMutation } from "../../graphql/mutations"
+import { findOrCreateCustomerMutation, upsertAppointmentMutation } from "../../graphql/mutations"
 import getLastAppointment from "./utils/getLastAppointment"
 import determineStartTime from "./utils/determineStartTime"
 
@@ -52,7 +52,7 @@ const Header = styled("div")`
 	a {
 		text-decoration: none !important;
 	}
-	
+
 	h1 {
 		padding-top: 20px;
 		font-family: marguerite;
@@ -94,22 +94,22 @@ const RootContainer = ({
 
 		try {
 			const {
-				data: { CreateCustomer }
+				data: { findOrCreateCustomer }
 			} = await client.mutate({
-				mutation: createCustomerMutation,
+				mutation: findOrCreateCustomerMutation,
 				variables: {
 					input: customer
 				}
 			})
 
-			if (!CreateCustomer.ok) {
+			if (!findOrCreateCustomer.ok) {
 				throw new Error("Failed to create the customer account. Please see the receptionist.")
 			}
 
 			const lastAppt = getLastAppointment([...appointments, ...blockedTimes])
 			const startTime = determineStartTime(lastAppt)
 			const endTime = format(addMinutes(startTime, duration))
-			const customerId = CreateCustomer.customer.id
+			const customerId = findOrCreateCustomer.customer.id
 
 			const {
 				data: { upsertAppointment }

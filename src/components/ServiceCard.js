@@ -45,11 +45,12 @@ const Container = styled("div")`
 	`}
 
 	h1 {
-		line-height: 1.5;
+		line-height: 1;
 	}
 
 	p {
 		font-size: 22px;
+		padding-top: 5px;
 		opacity: 0.5;
 	}
 `
