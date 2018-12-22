@@ -45,21 +45,21 @@ const AuthView = ({ client }) => {
 	const handleSubmit = async () => {
 		setState({ ...state, isSubmiting: true })
 
-		const response = await client
-			.mutate({
+		try {
+			const { data } = await client.mutate({
 				mutation: authWithToken,
 				variables: { key: code }
 			})
-			.catch(error => {
-				console.log(error)
-			})
 
-		if (response.data.AuthWithToken.errors && response.data.AuthWithToken.errors.length > 0) {
-			return setState({ ...state, isSubmiting: false, errors: response.data.AuthWithToken.errors })
+			if (data.AuthWithToken.errors && data.AuthWithToken.errors.length > 0) {
+				return setState({ ...state, isSubmiting: false, errors: data.AuthWithToken.errors })
+			}
+
+			localStorage.setItem(AUTH_TOKEN_KEY, data.AuthWithToken.token)
+			window.location.reload()
+		} catch (error) {
+			setState({ ...state, errors: error.errors })
 		}
-
-		localStorage.setItem(AUTH_TOKEN_KEY, response.data.AuthWithToken.token)
-		window.location.reload()
 	}
 
 	return (
@@ -77,7 +77,7 @@ const AuthView = ({ client }) => {
 				type="text"
 				name="code"
 				value={code}
-				onChange={({ target: { value } }) => console.log(value) || setState({ ...state, code: value })}
+				onChange={({ target: { value } }) => setState({ ...state, code: value })}
 			/>
 
 			<div className="action">
