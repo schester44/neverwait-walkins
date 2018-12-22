@@ -9,11 +9,13 @@ import Button from "../components/Button"
 import { AUTH_TOKEN_KEY } from "../constants"
 
 const Wrapper = styled("div")`
-	width: 100%;
 	height: 100%;
 	display: flex;
+	margin: 0 auto;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
+	width: 90%;
 
 	.action {
 		width: 100%;
@@ -71,10 +73,13 @@ const AuthView = ({ client }) => {
 			)}
 
 			<Input
-				label="Auth Code"
+				placeholder="Auth Code"
+				type="text"
+				name="code"
 				value={code}
 				onChange={({ target: { value } }) => console.log(value) || setState({ ...state, code: value })}
 			/>
+
 			<div className="action">
 				<Button
 					onClick={handleSubmit}

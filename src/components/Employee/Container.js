@@ -43,7 +43,8 @@ export default styled("div")`
 		border-radius: 3px;
 		padding: 20px 50px;
 		font-size: 22px;
-		background: rgba(242, 209, 116, 1.0);
+		background: rgba(242, 209, 116, 1);
 		color: black;
+		box-shadow: 2px 3px 3px rgba(32, 32, 32, 0.3);
 	}
 `

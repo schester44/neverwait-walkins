@@ -1,21 +1,19 @@
-import React, { PureComponent } from "react"
+import React, { useState } from "react"
 import styled from "styled-components"
 import { compose } from "recompose"
-import { withRouter } from "react-router-dom"
+import { withRouter, Link } from "react-router-dom"
 import { withApollo } from "react-apollo"
 
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
-import differenceInMinutes from "date-fns/difference_in_minutes"
-import isBefore from "date-fns/is_before"
-import isAfter from "date-fns/is_after"
-import subMinutes from "date-fns/sub_minutes"
 
-import { CREATE_CUSTOMER, UPSERT_APPOINTMENT } from "../../graphql/mutations"
+import { createCustomerMutation, upsertAppointmentMutation } from "../../graphql/mutations"
+import getLastAppointment from "./utils/getLastAppointment"
+import determineStartTime from "./utils/determineStartTime"
 
-import ServiceSelector from "../../modules/signin/components/ServiceSelector"
-import CustomerForm from "../../modules/signin/components/CustomerForm"
-import FormButtons from "../../modules/signin/components/FormButtons"
+import ServiceSelector from "../../components/ServiceSelector"
+import Input from "../../components/Input"
+import Button from "../../components/Button"
 
 const Wrapper = styled("div")`
 	width: 100%;
@@ -26,10 +24,23 @@ const Wrapper = styled("div")`
 `
 
 const Content = styled("div")`
-	width: 100%;
+	position: relative;
+	width: 90%;
 	flex: 1;
 	display: flex;
 	flex-direction: column;
+	padding-top: 25px;
+
+	.button {
+		position: absolute;
+		bottom: 25px;
+		left: 0;
+		width: 100%;
+	}
+
+	h1 {
+		font-weight: 100;
+	}
 `
 
 const Header = styled("div")`
@@ -38,6 +49,10 @@ const Header = styled("div")`
 	justify-content: center;
 	width: 100%;
 
+	a {
+		text-decoration: none !important;
+	}
+	
 	h1 {
 		padding-top: 20px;
 		font-family: marguerite;
@@ -46,46 +61,44 @@ const Header = styled("div")`
 	}
 `
 
-class Form extends PureComponent {
-	constructor(props) {
-		super(props)
+const RootContainer = ({
+	client,
+	history,
+	appointments = [],
+	blockedTimes = [],
+	employeeId,
+	locationId,
+	services = []
+}) => {
+	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
+	const [customer, setCustomer] = useState({ firstName: "Checkin App", contactNumber: "" })
 
-		this.state = {
-			page: 1,
-			selectedService: undefined,
-			isSubmitting: false,
-			appointment: {
-				userId: props.employeeId,
-				locationId: props.locationId,
-				services: []
-			},
-			customer: {
-				firstName: "",
-				lastName: ""
-			}
-		}
-
-		this.allServices = props.services.reduce((acc, service) => {
+	const [state, setState] = useState({
+		isSubmitting: false,
+		services: services.reduce((acc, service) => {
 			acc[service.id] = service
 			return acc
-		}, {})
-	}
+		}, {}),
+		selectedService: undefined
+	})
 
-	handleSubmit = async () => {
-		this.setState({ isSubmitting: true })
+	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService
+
+	const handleSubmit = async () => {
+		setState({ ...state, isSubmitting: true })
 
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
-		const duration = this.state.appointment.services.reduce((acc, id) => {
-			return acc + this.allServices[id].duration
+		const duration = appointment.services.reduce((acc, id) => {
+			return acc + state.services[id].duration
 		}, 0)
 
 		try {
 			const {
 				data: { CreateCustomer }
-			} = await this.props.client.mutate({
-				mutation: CREATE_CUSTOMER,
+			} = await client.mutate({
+				mutation: createCustomerMutation,
 				variables: {
-					input: this.state.customer
+					input: customer
 				}
 			})
 
@@ -93,54 +106,18 @@ class Form extends PureComponent {
 				throw new Error("Failed to create the customer account. Please see the receptionist.")
 			}
 
-			const customerId = CreateCustomer.customer.id
-			const now = new Date()
-			const checkInTime = format(now)
-
-			// sort by startTime so appointments are in the order of which they occur
-			const sortedAppointments = [...this.props.appointments, ...this.props.blockedTimes]
-				.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
-				.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
-
-			let index = undefined
-
-			for (let i = 0; i < sortedAppointments.length; i++) {
-				const current = sortedAppointments[i]
-
-				if (i === 0 && isBefore(addMinutes(now, 20), current.startTime)) {
-					break
-				}
-
-				const difference = differenceInMinutes(
-					current.startTime,
-					sortedAppointments[i - 1] ? sortedAppointments[i - 1].endTime : now
-				)
-
-				if (difference > 20) {
-					index = i - 1
-					break
-				} else {
-					index = i
-				}
-			}
-
-			const lastAppt = !isNaN(index) ? sortedAppointments[index] : undefined
-
-			// If the appointment hasn't been completed or if its end time is after right now then it can be considered to still be in progress. If its still in progress than set the start time of this appointment to the endTime of the last appointment else set it to right now
-			const startTime =
-				!lastAppt || isBefore(lastAppt.endTime, subMinutes(now, 2))
-					? checkInTime
-					: format(addMinutes(lastAppt.endTime, 2))
-
+			const lastAppt = getLastAppointment([...appointments, ...blockedTimes])
+			const startTime = determineStartTime(lastAppt)
 			const endTime = format(addMinutes(startTime, duration))
+			const customerId = CreateCustomer.customer.id
 
 			const {
 				data: { upsertAppointment }
-			} = await this.props.client.mutate({
-				mutation: UPSERT_APPOINTMENT,
+			} = await client.mutate({
+				mutation: upsertAppointmentMutation,
 				variables: {
 					input: {
-						...this.state.appointment,
+						...appointment,
 						startTime,
 						endTime,
 						customerId
@@ -153,92 +130,61 @@ class Form extends PureComponent {
 			}
 
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
-			this.props.history.push({
-				pathname: "/finished",
-				appointment: upsertAppointment.appointment
-			})
+			history.push({ pathname: "/finished", appointment: upsertAppointment.appointment })
 		} catch (error) {
 			console.log("error", error)
-			this.setState({ isSubmitting: false })
+			setState({ ...state, isSubmitting: true })
 		}
 	}
 
-	handleInputChange = ({ target: { name, value } }) => {
-		this.setState({
-			customer: {
-				...this.state.customer,
-				[name]: value
-			}
-		})
-	}
-
-	handleServiceSelection = service => {
-		this.setState({
-			selectedService: service.id,
-			appointment: {
-				...this.state.appointment,
-				services: [service.id]
-			}
-		})
-	}
-
-	incrementPage = () => {
-		this.setState({ page: this.state.page + 1 })
-	}
-
-	decrementPage = () => {
-		if (this.state.page === 1) {
-			return this.props.history.push("/")
-		}
-
-		this.setState({ page: this.state.page - 1 })
-	}
-
-	handleNextButton = () => {
-		if (this.state.isSubmitting) return
-
-		if (this.state.page === 1) {
-			this.incrementPage()
-		} else {
-			this.handleSubmit()
-		}
-	}
-
-	render() {
-		const buttonDisabled =
-			this.state.page === 1 ? this.state.customer.firstName.length === 0 : this.state.appointment.services.length === 0
-
-		return (
-			<Wrapper>
-				<Header>
+	return (
+		<Wrapper>
+			<Header>
+				<Link to="/">
 					<h1>Lorenzo's</h1>
-				</Header>
+				</Link>
+			</Header>
 
-				<Content>
-					{this.state.page === 1 ? (
-						<CustomerForm fields={this.state.customer} onInputChange={this.handleInputChange} />
-					) : (
-						<ServiceSelector
-							services={this.props.services}
-							selectedService={this.state.selectedService}
-							onSelect={this.handleServiceSelection}
-						/>
-					)}
-
-					<FormButtons
-						disabled={buttonDisabled}
-						submitting={this.state.isSubmitting}
-						page={this.state.page}
-						onNextButtonClick={this.handleNextButton}
-						onBackButtonClick={this.decrementPage}
+			<Content>
+				<h1>1. ENTER YOUR PHONE NUMBER</h1>
+				<div className="form-input">
+					<Input
+						placeholder="Phone Number"
+						type="number"
+						pattern="\d*"
+						name="contactNumber"
+						value={customer.contactNumber}
+						onChange={({ target: { value } }) => setCustomer({ ...customer, contactNumber: value })}
 					/>
-				</Content>
-			</Wrapper>
-		)
-	}
+				</div>
+				<h1 style={{ marginTop: 35 }}>2. SELECT A SERVICE</h1>
+
+				<ServiceSelector
+					services={services}
+					selectedService={state.selectedService}
+					onSelect={({ id }) => {
+						setState({ ...state, selectedService: id })
+						setAppointment({ ...appointment, services: [id] })
+					}}
+				/>
+
+				<div className="button">
+					<Button onClick={handleSubmit} disabled={btnDisabled}>
+						{btnDisabled
+							? customer.contactNumber.length < 10
+								? "Enter valid phone number"
+								: !state.selectedService
+								? "Select a service"
+								: "Form incomplete"
+							: "Check In"}
+					</Button>
+				</div>
+			</Content>
+		</Wrapper>
+	)
 }
 
 export default compose(
 	withRouter,
 	withApollo
-)(Form)
+)(RootContainer)

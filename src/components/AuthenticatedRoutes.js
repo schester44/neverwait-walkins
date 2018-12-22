@@ -3,9 +3,10 @@ import { Redirect } from "react-router-dom"
 import { Query } from "react-apollo"
 
 import { appointmentsSubscription, blockedTimesSubscription } from "../graphql/subscriptions"
-
 import { LOCATION_QUERY } from "../graphql/queries"
 import { isAuthenticated } from "../graphql/utils"
+
+import LoadingScreen from "./LoadingScreen"
 
 class AuthenticatedRoutes extends React.Component {
 	onAppointmentUpdate = (prev, { subscriptionData }) => {
@@ -118,7 +119,7 @@ class AuthenticatedRoutes extends React.Component {
 		return (
 			<Query query={LOCATION_QUERY} variables={{ startTime, endTime }}>
 				{({ loading, data, subscribeToMore }) => {
-					if (loading) return <div>LOADING SERVER DATA</div>
+					if (loading) return <LoadingScreen />
 
 					// TODO: This may need work
 					if (!(data || {}).location) {

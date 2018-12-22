@@ -20,10 +20,12 @@
 		"react-apollo": "^2.1.5",
 		"react-dom": "^16.7.0-alpha.2",
 		"react-hot-loader": "^4.3.4",
+		"react-input-mask": "^2.0.4",
 		"react-motion": "^0.5.2",
 		"react-router": "^4.3.1",
 		"react-router-dom": "^4.3.1",
 		"react-scripts": "1.1.4",
+		"react-text-mask": "^5.4.3",
 		"recompose": "^0.28.2",
 		"styled-components": "^3.3.2",
 		"subscriptions-transport-ws": "^0.9.11"

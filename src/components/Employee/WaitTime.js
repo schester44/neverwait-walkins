@@ -44,8 +44,8 @@ const Employee = ({ employee, onClick }) => {
 							{time.hours > 0 ? (
 								<span>
 									{time.hours}
-									<span className="small">hr</span> {time.minutes}
-									<span className="small">minutes</span>
+									<span className="small"> hr{time.hours > 1 && "s"}</span> {time.minutes}
+									<span className="small"> minutes</span>
 								</span>
 							) : (
 								<span>

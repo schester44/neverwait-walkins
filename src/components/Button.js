@@ -2,21 +2,23 @@ import React from "react"
 import styled from "styled-components"
 
 const StyledBtn = styled("button")`
-		width: 100%;
-		padding: 30px 10px;
-		border: 0;
-		background: rgba(97, 178, 249, 1.0);
-		border-radius: 5px;
-		color: white;
-		font-size: 32px;
+	width: 100%;
+	padding: 30px 10px;
+	margin: 50px auto 15px auto;
+	border: 0;
+	background: rgba(242, 209, 116, 1);
+	color: black;
+	border-radius: 3px;
+	font-size: 32px;
+	text-align: center;
+	border: none;
 
 	&:disabled {
-		transition: opacity: 1s ease;
+		transition: opacity 1s ease;
 		cursor: not-allowed;
 		opacity: 0.2;
 	}
 `
-
 
 const Button = props => {
 	return <StyledBtn {...props}>{props.children}</StyledBtn>

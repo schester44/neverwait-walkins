@@ -12,7 +12,7 @@ export const authWithToken = gql`
 	}
 `
 
-export const CREATE_CUSTOMER = gql`
+export const createCustomerMutation = gql`
 	mutation createCustomer($input: CreateCustomerInput!) {
 		CreateCustomer(input: $input) {
 			ok
@@ -25,7 +25,7 @@ export const CREATE_CUSTOMER = gql`
 	}
 `
 
-export const UPSERT_APPOINTMENT = gql`
+export const upsertAppointmentMutation = gql`
 	mutation upsert($input: AppointmentInput!) {
 		upsertAppointment(input: $input) {
 			ok

@@ -1,14 +1,13 @@
 import React, { useEffect } from "react"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 
-import Auth from "./views/AuthView"
-import MultiResourceHomeView from "./views/CheckInScreen"
-
-import Form from "./views/Form/RootContainer"
-import Finished from "./modules/signin/views/FinishedView"
-
 import AuthenticatedRoutes from "./components/AuthenticatedRoutes"
 import GuestRoute from "./components/GuestRoute"
+
+import Auth from "./views/AuthView"
+import MultiResourceHomeView from "./views/CheckInScreen"
+import Form from "./views/Form/RootContainer"
+import Finished from "./views/Form/FinishedView"
 
 const App = () => {
 	useEffect(() => {
