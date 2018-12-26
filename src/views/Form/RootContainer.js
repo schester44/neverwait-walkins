@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import styled from "styled-components"
 import { compose } from "recompose"
 import { withRouter, Link } from "react-router-dom"
@@ -7,6 +7,7 @@ import { withApollo } from "react-apollo"
 import format from "date-fns/format"
 import addMinutes from "date-fns/add_minutes"
 
+import { searchCustomers } from "../../graphql/queries"
 import { findOrCreateCustomerMutation, upsertAppointmentMutation } from "../../graphql/mutations"
 import getLastAppointment from "./utils/getLastAppointment"
 import determineStartTime from "./utils/determineStartTime"
@@ -61,6 +62,15 @@ const Header = styled("div")`
 	}
 `
 
+const ActiveCustomer = styled("div")`
+	width: 100%;
+	text-align: center;
+	font-size: 40px;
+	color: white;
+	padding-top: 40px;
+	padding-bottom: 25px;
+`
+
 const RootContainer = ({
 	client,
 	history,
@@ -71,7 +81,8 @@ const RootContainer = ({
 	services = []
 }) => {
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
-	const [customer, setCustomer] = useState({ firstName: "Checkin App", contactNumber: "" })
+	const [customer, setCustomer] = useState({ firstName: "", lastName: "", contactNumber: "" })
+	const [activeCustomer, setActiveCustomer] = useState(undefined)
 
 	const [state, setState] = useState({
 		isSubmitting: false,
@@ -81,6 +92,54 @@ const RootContainer = ({
 		}, {}),
 		selectedService: undefined
 	})
+
+	useEffect(
+		() => {
+			if (!customer.contactNumber || customer.contactNumber.length < 10) {
+				if (activeCustomer) {
+					setActiveCustomer(undefined)
+				}
+
+				if (state.selectedService) {
+					setState(prevState => ({ ...prevState, selectedService: undefined }))
+				}
+
+				return
+			}
+
+			client
+				.query({
+					query: searchCustomers,
+					variables: {
+						input: {
+							term: customer.contactNumber
+						}
+					}
+				})
+				.then(({ data: { searchCustomers } }) => {
+					if (searchCustomers && searchCustomers.length > 0) {
+						let activeCustomer = searchCustomers[searchCustomers.length - 1]
+						setActiveCustomer(activeCustomer)
+
+						if (activeCustomer.appointments.past.length > 0) {
+							const service = activeCustomer.appointments.past[0].services[0]
+
+							if (service) {
+								setState(prevState => ({ ...prevState, selectedService: service.id }))
+								setAppointment(prevState => ({ ...prevState, services: [service.id] }))
+							}
+						}
+					} else {
+						setActiveCustomer(undefined)
+
+						if (state.selectedService) {
+							setState(prevState => ({ ...prevState, selectedService: undefined }))
+						}
+					}
+				})
+		},
+		[customer.contactNumber]
+	)
 
 	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService
 
@@ -146,7 +205,7 @@ const RootContainer = ({
 			</Header>
 
 			<Content>
-				<h1>1. ENTER YOUR PHONE NUMBER</h1>
+				<h1>1. ENTER YOUR INFO</h1>
 				<div className="form-input">
 					<Input
 						placeholder="Phone Number"
@@ -154,9 +213,33 @@ const RootContainer = ({
 						pattern="\d*"
 						name="contactNumber"
 						value={customer.contactNumber}
-						onChange={({ target: { value } }) => setCustomer({ ...customer, contactNumber: value })}
+						onChange={({ target: { value } }) => {
+							setCustomer(prevState => ({ ...prevState, contactNumber: value }))
+						}}
 					/>
 				</div>
+
+				{!activeCustomer && (
+					<div className="form-input" style={{ display: "flex" }}>
+						<Input
+							placeholder="First Name"
+							type="text"
+							name="firstName"
+							style={{ marginRight: 10 }}
+							value={customer.firstName}
+							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, firstName: value }))}
+						/>
+
+						<Input
+							placeholder="Last Name"
+							type="text"
+							name="lastName"
+							value={customer.lastName}
+							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, lastName: value }))}
+						/>
+					</div>
+				)}
+				{activeCustomer && <ActiveCustomer>Welcome back, {activeCustomer.firstName}!</ActiveCustomer>}
 				<h1 style={{ marginTop: 35 }}>2. SELECT A SERVICE</h1>
 
 				<ServiceSelector

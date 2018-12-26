@@ -10,7 +10,7 @@ const Wrapper = styled("div")`
 	display: flex;
 	flex-wrap: wrap;
 	flex: 1;
-	max-height: 56%;
+	max-height: 42%;
 	overflow: auto;
 `
 

@@ -32,3 +32,21 @@ export const LOCATION_QUERY = gql`
 		}
 	}
 `
+
+export const searchCustomers = gql`
+	query searchCustomers($input: CustomerSearchInput!) {
+		searchCustomers(input: $input) {
+			id
+			firstName
+			lastName
+			appointments {
+				past {
+					id
+					services {
+						id
+					}
+				}
+			}
+		}
+	}
+`
