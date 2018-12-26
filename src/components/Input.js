@@ -35,11 +35,12 @@ const Wrapper = styled("div")`
 	}
 `
 
-const Input = ({ value, label, ...props }) => {
+const Input = ({ value, label, style = {}, ...props }) => {
 	const ref = useRef(null)
 
 	return (
 		<Wrapper
+			style={style}
 			onClick={() => {
 				ref.current.focus()
 			}}
