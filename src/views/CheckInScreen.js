@@ -17,19 +17,36 @@ const Wrapper = styled("div")`
 			padding-top: 80px;
 			font-size: 120px;
 			line-height: 1;
-			color: rgba(242, 209, 116, 1.0);
+			color: rgba(242, 209, 116, 1);
 		}
 	}
 `
 
-const MultiResource = ({ employees }) => {	
+export const Config = styled("div")`
+	flex: 1;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 34px;
+	text-align: center;
+`
+
+const configPlaceholder = (
+	<Config>
+		Your account is not configured correctly to work with this app. At least one Staff account needs the 'Booking'
+		setting enabled, as well as a service assigned to said user.
+	</Config>
+)
+
+const MultiResource = ({ employees }) => {
 	return (
 		<Wrapper>
 			<div className="header">
 				<h1>Lorenzo's</h1>
 			</div>
 
-			<EmployeeList employees={employees} />
+			{employees.length === 0 ? configPlaceholder : <EmployeeList employees={employees} />}
 		</Wrapper>
 	)
 }
