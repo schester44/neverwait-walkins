@@ -141,7 +141,7 @@ const RootContainer = ({
 		[customer.contactNumber]
 	)
 
-	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService
+	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService || state.isSubmitting
 
 	const handleSubmit = async () => {
 		setState({ ...state, isSubmitting: true })
@@ -152,23 +152,28 @@ const RootContainer = ({
 		}, 0)
 
 		try {
-			const {
-				data: { findOrCreateCustomer }
-			} = await client.mutate({
-				mutation: findOrCreateCustomerMutation,
-				variables: {
-					input: customer
-				}
-			})
+			let customerId = (activeCustomer || {}).id
 
-			if (!findOrCreateCustomer.ok) {
-				throw new Error("Failed to create the customer account. Please see the receptionist.")
+			if (!customerId) {
+				const {
+					data: { findOrCreateCustomer }
+				} = await client.mutate({
+					mutation: findOrCreateCustomerMutation,
+					variables: {
+						input: customer
+					}
+				})
+
+				if (!findOrCreateCustomer.ok) {
+					throw new Error("Failed to create the customer account. Please see the receptionist.")
+				}
+
+				customerId = findOrCreateCustomer.customer.id
 			}
 
 			const lastAppt = getLastAppointment([...appointments, ...blockedTimes])
 			const startTime = determineStartTime(lastAppt)
 			const endTime = format(addMinutes(startTime, duration))
-			const customerId = findOrCreateCustomer.customer.id
 
 			const {
 				data: { upsertAppointment }
@@ -191,8 +196,7 @@ const RootContainer = ({
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
 			history.push({ pathname: "/finished", appointment: upsertAppointment.appointment })
 		} catch (error) {
-			console.log("error", error)
-			setState({ ...state, isSubmitting: true })
+			setState({ ...state, isSubmitting: false })
 		}
 	}
 
@@ -254,7 +258,9 @@ const RootContainer = ({
 				<div className="button">
 					<Button onClick={handleSubmit} disabled={btnDisabled}>
 						{btnDisabled
-							? customer.contactNumber.length < 10
+							? state.isSubmitting
+								? "Submitting"
+								: customer.contactNumber.length < 10
 								? "Enter valid phone number"
 								: !state.selectedService
 								? "Select a service"
