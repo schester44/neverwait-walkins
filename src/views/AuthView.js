@@ -43,7 +43,7 @@ const AuthView = ({ client }) => {
 	const { code, isSubmiting, errors } = state
 
 	const handleSubmit = async () => {
-		setState({ ...state, isSubmiting: true })
+		setState(prevState => ({ ...prevState, isSubmiting: true }))
 
 		try {
 			const { data } = await client.mutate({
@@ -52,13 +52,14 @@ const AuthView = ({ client }) => {
 			})
 
 			if (data.AuthWithToken.errors && data.AuthWithToken.errors.length > 0) {
-				return setState({ ...state, isSubmiting: false, errors: data.AuthWithToken.errors })
+				return setState(prevState => ({ ...prevState, isSubmiting: false, errors: data.AuthWithToken.errors }))
 			}
 
 			localStorage.setItem(AUTH_TOKEN_KEY, data.AuthWithToken.token)
 			window.location.reload()
 		} catch (error) {
-			setState({ ...state, errors: error.errors })
+			console.log(error);
+			setState(prevState => ({ ...prevState, errors: error.errors || [] }))
 		}
 	}
 
@@ -77,7 +78,7 @@ const AuthView = ({ client }) => {
 				type="text"
 				name="code"
 				value={code}
-				onChange={({ target: { value } }) => setState({ ...state, code: value })}
+				onChange={({ target: { value } }) => setState(prevState => ({ ...prevState, code: value }))}
 			/>
 
 			<div className="action">

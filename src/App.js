@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
+import { withRouter, Switch, Route } from "react-router-dom"
 
 import AuthenticatedRoutes from "./components/AuthenticatedRoutes"
 import GuestRoute from "./components/GuestRoute"
@@ -9,7 +9,8 @@ import MultiResourceHomeView from "./views/CheckInScreen"
 import Form from "./views/Form/RootContainer"
 import Finished from "./views/Form/FinishedView"
 
-const App = () => {
+const App = ({ location }) => {
+	console.log(location)
 	useEffect(() => {
 		const handleClickEvents = event => {
 			if (event.target.className === "input-wrapper") return
@@ -31,45 +32,44 @@ const App = () => {
 	}, [])
 
 	return (
-		<Router>
-			<Switch>
-				<GuestRoute path="/auth" component={Auth} />
-				<AuthenticatedRoutes>
-					{({ location }) => {
-						return (
-							<React.Fragment>
-								<Route
-									exact
-									path="/"
-									render={props => {
-										const employees = location.employees.filter(emp => emp.services.length > 0)
-										return <MultiResourceHomeView employees={employees} location={location} />
-									}}
-								/>
+		<Switch>
+			<GuestRoute path="/auth" component={Auth} />
+			<AuthenticatedRoutes>
+				{({ location }) => {
+					console.log({ location })
+					return (
+						<React.Fragment>
+							<Route
+								exact
+								path="/"
+								render={props => {
+									const employees = location.employees.filter(emp => emp.services.length > 0)
+									return <MultiResourceHomeView employees={employees} location={location} />
+								}}
+							/>
 
-								<Route
-									path="/sign-in/:employeeId"
-									render={props => {
-										const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
-										return (
-											<Form
-												locationId={location.id}
-												employeeId={employee.id}
-												services={employee.services}
-												blockedTimes={employee.blockedTimes}
-												appointments={employee.appointments}
-											/>
-										)
-									}}
-								/>
-								<Route path="/finished" locationId={location.id} component={Finished} />
-							</React.Fragment>
-						)
-					}}
-				</AuthenticatedRoutes>
-			</Switch>
-		</Router>
+							<Route
+								path="/sign-in/:employeeId"
+								render={props => {
+									const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
+									return (
+										<Form
+											locationId={location.id}
+											employeeId={employee.id}
+											services={employee.services}
+											blockedTimes={employee.blockedTimes}
+											appointments={employee.appointments}
+										/>
+									)
+								}}
+							/>
+							<Route path="/finished" locationId={location.id} component={Finished} />
+						</React.Fragment>
+					)
+				}}
+			</AuthenticatedRoutes>
+		</Switch>
 	)
 }
 
-export default App
+export default withRouter(App)

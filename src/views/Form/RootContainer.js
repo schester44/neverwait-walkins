@@ -144,7 +144,7 @@ const RootContainer = ({
 	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService || state.isSubmitting
 
 	const handleSubmit = async () => {
-		setState({ ...state, isSubmitting: true })
+		setState(prevState => ({ ...prevState, isSubmitting: true }))
 
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
 		const duration = appointment.services.reduce((acc, id) => {
@@ -196,7 +196,7 @@ const RootContainer = ({
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
 			history.push({ pathname: "/finished", appointment: upsertAppointment.appointment })
 		} catch (error) {
-			setState({ ...state, isSubmitting: false })
+			setState(prevState => ({ ...prevState, isSubmitting: false }))
 		}
 	}
 
@@ -250,7 +250,7 @@ const RootContainer = ({
 					services={services}
 					selectedService={state.selectedService}
 					onSelect={({ id }) => {
-						setState({ ...state, selectedService: id })
+						setState(prevState => ({ ...prevState, selectedService: id }))
 						setAppointment({ ...appointment, services: [id] })
 					}}
 				/>
