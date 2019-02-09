@@ -93,53 +93,50 @@ const RootContainer = ({
 		selectedService: undefined
 	})
 
-	useEffect(
-		() => {
-			if (!customer.contactNumber || customer.contactNumber.length < 10) {
-				if (activeCustomer) {
-					setActiveCustomer(undefined)
-				}
-
-				if (state.selectedService) {
-					setState(prevState => ({ ...prevState, selectedService: undefined }))
-				}
-
-				return
+	useEffect(() => {
+		if (!customer.contactNumber || customer.contactNumber.length < 10) {
+			if (activeCustomer) {
+				setActiveCustomer(undefined)
 			}
 
-			client
-				.query({
-					query: searchCustomers,
-					variables: {
-						input: {
-							term: customer.contactNumber
+			if (state.selectedService) {
+				setState(prevState => ({ ...prevState, selectedService: undefined }))
+			}
+
+			return
+		}
+
+		client
+			.query({
+				query: searchCustomers,
+				variables: {
+					input: {
+						term: customer.contactNumber
+					}
+				}
+			})
+			.then(({ data: { searchCustomers } }) => {
+				if (searchCustomers && searchCustomers.length > 0) {
+					let activeCustomer = searchCustomers[searchCustomers.length - 1]
+					setActiveCustomer(activeCustomer)
+
+					if (activeCustomer.appointments.past.length > 0) {
+						const service = activeCustomer.appointments.past[0].services[0]
+
+						if (service) {
+							setState(prevState => ({ ...prevState, selectedService: service.id }))
+							setAppointment(prevState => ({ ...prevState, services: [service.id] }))
 						}
 					}
-				})
-				.then(({ data: { searchCustomers } }) => {
-					if (searchCustomers && searchCustomers.length > 0) {
-						let activeCustomer = searchCustomers[searchCustomers.length - 1]
-						setActiveCustomer(activeCustomer)
+				} else {
+					setActiveCustomer(undefined)
 
-						if (activeCustomer.appointments.past.length > 0) {
-							const service = activeCustomer.appointments.past[0].services[0]
-
-							if (service) {
-								setState(prevState => ({ ...prevState, selectedService: service.id }))
-								setAppointment(prevState => ({ ...prevState, services: [service.id] }))
-							}
-						}
-					} else {
-						setActiveCustomer(undefined)
-
-						if (state.selectedService) {
-							setState(prevState => ({ ...prevState, selectedService: undefined }))
-						}
+					if (state.selectedService) {
+						setState(prevState => ({ ...prevState, selectedService: undefined }))
 					}
-				})
-		},
-		[customer.contactNumber]
-	)
+				}
+			})
+	}, [customer.contactNumber])
 
 	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService || state.isSubmitting
 
@@ -160,7 +157,7 @@ const RootContainer = ({
 				} = await client.mutate({
 					mutation: findOrCreateCustomerMutation,
 					variables: {
-						input: customer
+						input: { ...customer, acceptsMarketing: 1, appointmentNotifications: "sms" }
 					}
 				})
 
@@ -231,7 +228,9 @@ const RootContainer = ({
 							name="firstName"
 							style={{ marginRight: 10 }}
 							value={customer.firstName}
-							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, firstName: value }))}
+							onChange={({ target: { value } }) =>
+								setCustomer(prevState => ({ ...prevState, firstName: value }))
+							}
 						/>
 
 						<Input
@@ -239,7 +238,9 @@ const RootContainer = ({
 							type="text"
 							name="lastName"
 							value={customer.lastName}
-							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, lastName: value }))}
+							onChange={({ target: { value } }) =>
+								setCustomer(prevState => ({ ...prevState, lastName: value }))
+							}
 						/>
 					</div>
 				)}
