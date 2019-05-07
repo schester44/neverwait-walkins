@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { withRouter, Switch, Route } from "react-router-dom"
 
 import AuthenticatedRoutes from "./components/AuthenticatedRoutes"
@@ -9,27 +9,28 @@ import MultiResourceHomeView from "./views/CheckInScreen"
 import Form from "./views/Form/RootContainer"
 import Finished from "./views/Form/FinishedView"
 
-const App = ({ location }) => {
-	console.log(location)
-	useEffect(() => {
-		const handleClickEvents = event => {
-			if (event.target.className === "input-wrapper") return
+const useInputListener = (cb, options = {}) => {
+	React.useEffect(() => {
+		const handler = event => {
+			if (options.exclude && event.target.className === options.exclude) return
 
 			document.activeElement.blur()
 
 			const inputs = document.querySelectorAll("input")
 
 			for (var i = 0; i < inputs.length; i++) {
-				inputs[i].blur()
+				cb(inputs[i])
 			}
 		}
 
-		document.addEventListener("click", handleClickEvents)
+		document.addEventListener(options.event || "click", handler)
 
-		return () => {
-			document.removeEventListener("click", handleClickEvents)
-		}
+		return () => document.removeEventListener(options.event || "click", handler)
 	}, [])
+}
+
+const App = ({ location }) => {
+	useInputListener(input => input.blur(), { exclude: "input-wrapper" })
 
 	return (
 		<Switch>
@@ -51,7 +52,9 @@ const App = ({ location }) => {
 							<Route
 								path="/sign-in/:employeeId"
 								render={props => {
-									const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
+									const employee = location.employees.find(
+										emp => +emp.id === +props.match.params.employeeId
+									)
 									return (
 										<Form
 											locationId={location.id}

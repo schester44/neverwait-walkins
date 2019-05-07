@@ -22,7 +22,7 @@ const AuthLink = new ApolloLink((operation, forward) => {
 	if (token) {
 		operation.setContext({
 			headers: {
-				"x-token": token
+				"x-access-token": token
 			}
 		})
 	}
@@ -34,7 +34,7 @@ const AuthLink = new ApolloLink((operation, forward) => {
 		} = context
 
 		if (headers) {
-			const token = headers.get("x-token")
+			const token = headers.get("x-access-token")
 
 			if (token) {
 				localStorage.setItem(AUTH_TOKEN_KEY, token)
