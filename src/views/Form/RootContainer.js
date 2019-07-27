@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from "react"
-import styled from "styled-components"
-import { compose } from "recompose"
-import { withRouter, Link } from "react-router-dom"
-import { withApollo } from "react-apollo"
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+import { withRouter, Link } from 'react-router-dom'
+import { withApollo } from 'react-apollo'
 
-import format from "date-fns/format"
-import addMinutes from "date-fns/add_minutes"
+import format from 'date-fns/format'
+import addMinutes from 'date-fns/add_minutes'
 
-import { searchCustomers } from "../../graphql/queries"
-import { findOrCreateCustomerMutation, upsertAppointmentMutation } from "../../graphql/mutations"
-import getLastAppointment from "./utils/getLastAppointment"
-import determineStartTime from "./utils/determineStartTime"
+import { searchCustomers } from '../../graphql/queries'
+import { findOrCreateCustomerMutation, upsertAppointmentMutation } from '../../graphql/mutations'
+import getLastAppointment from './utils/getLastAppointment'
+import determineStartTime from './utils/determineStartTime'
 
-import ServiceSelector from "../../components/ServiceSelector"
-import Input from "../../components/Input"
-import Button from "../../components/Button"
+import ServiceSelector from '../../components/ServiceSelector'
+import Input from '../../components/Input'
+import Button from '../../components/Button'
 
-const Wrapper = styled("div")`
+const Wrapper = styled('div')`
 	width: 100%;
 	height: 100%;
 	display: flex;
@@ -24,7 +23,7 @@ const Wrapper = styled("div")`
 	align-items: center;
 `
 
-const Content = styled("div")`
+const Content = styled('div')`
 	position: relative;
 	width: 90%;
 	flex: 1;
@@ -44,7 +43,7 @@ const Content = styled("div")`
 	}
 `
 
-const Header = styled("div")`
+const Header = styled('div')`
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -62,7 +61,7 @@ const Header = styled("div")`
 	}
 `
 
-const ActiveCustomer = styled("div")`
+const ActiveCustomer = styled('div')`
 	width: 100%;
 	text-align: center;
 	font-size: 40px;
@@ -81,7 +80,7 @@ const RootContainer = ({
 	services = []
 }) => {
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
-	const [customer, setCustomer] = useState({ firstName: "", lastName: "", contactNumber: "" })
+	const [customer, setCustomer] = useState({ firstName: '', lastName: '', contactNumber: '' })
 	const [activeCustomer, setActiveCustomer] = useState(undefined)
 
 	const [state, setState] = useState({
@@ -157,13 +156,9 @@ const RootContainer = ({
 				} = await client.mutate({
 					mutation: findOrCreateCustomerMutation,
 					variables: {
-						input: { ...customer, acceptsMarketing: 1, appointmentNotifications: "sms" }
+						input: { ...customer, acceptsMarketing: 1, appointmentNotifications: 'sms' }
 					}
 				})
-
-				if (!findOrCreateCustomer.ok) {
-					throw new Error("Failed to create the customer account. Please see the receptionist.")
-				}
 
 				customerId = findOrCreateCustomer.customer.id
 			}
@@ -186,12 +181,8 @@ const RootContainer = ({
 				}
 			})
 
-			if (!upsertAppointment.ok) {
-				throw new Error("Failed to create the appointment. Please see the receptionist.")
-			}
-
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
-			history.push({ pathname: "/finished", appointment: upsertAppointment.appointment })
+			history.push({ pathname: '/finished', appointment: upsertAppointment.appointment })
 		} catch (error) {
 			setState(prevState => ({ ...prevState, isSubmitting: false }))
 		}
@@ -221,16 +212,14 @@ const RootContainer = ({
 				</div>
 
 				{!activeCustomer && (
-					<div className="form-input" style={{ display: "flex" }}>
+					<div className="form-input" style={{ display: 'flex' }}>
 						<Input
 							placeholder="First Name"
 							type="text"
 							name="firstName"
 							style={{ marginRight: 10 }}
 							value={customer.firstName}
-							onChange={({ target: { value } }) =>
-								setCustomer(prevState => ({ ...prevState, firstName: value }))
-							}
+							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, firstName: value }))}
 						/>
 
 						<Input
@@ -238,9 +227,7 @@ const RootContainer = ({
 							type="text"
 							name="lastName"
 							value={customer.lastName}
-							onChange={({ target: { value } }) =>
-								setCustomer(prevState => ({ ...prevState, lastName: value }))
-							}
+							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, lastName: value }))}
 						/>
 					</div>
 				)}
@@ -260,13 +247,13 @@ const RootContainer = ({
 					<Button onClick={handleSubmit} disabled={btnDisabled}>
 						{btnDisabled
 							? state.isSubmitting
-								? "Submitting"
+								? 'Submitting'
 								: customer.contactNumber.length < 10
-								? "Enter valid phone number"
+								? 'Enter valid phone number'
 								: !state.selectedService
-								? "Select a service"
-								: "Form incomplete"
-							: "Check In"}
+								? 'Select a service'
+								: 'Form incomplete'
+							: 'Check In'}
 					</Button>
 				</div>
 			</Content>
@@ -274,7 +261,4 @@ const RootContainer = ({
 	)
 }
 
-export default compose(
-	withRouter,
-	withApollo
-)(RootContainer)
+export default withRouter(withApollo(RootContainer))

@@ -1,14 +1,14 @@
-import React, { useState } from "react"
-import styled from "styled-components"
+import React, { useState } from 'react'
+import styled from 'styled-components'
 
-import { withApollo } from "react-apollo"
-import { authWithToken } from "../graphql/mutations"
+import { withApollo } from 'react-apollo'
+import { authWithToken } from '../graphql/mutations'
 
-import Input from "../components/Input"
-import Button from "../components/Button"
-import { AUTH_TOKEN_KEY } from "../constants"
+import Input from '../components/Input'
+import Button from '../components/Button'
+import { AUTH_TOKEN_KEY } from '../constants'
 
-const Wrapper = styled("div")`
+const Wrapper = styled('div')`
 	height: 100%;
 	display: flex;
 	margin: 0 auto;
@@ -24,7 +24,7 @@ const Wrapper = styled("div")`
 	}
 `
 
-const Errors = styled("div")`
+const Errors = styled('div')`
 	border-radius: 5px;
 	background: rgba(255, 0, 0, 0.5);
 	font-size: 32px;
@@ -36,7 +36,7 @@ const Errors = styled("div")`
 const AuthView = ({ client }) => {
 	const [state, setState] = useState({
 		isSubmiting: false,
-		code: "",
+		code: '',
 		errors: []
 	})
 
@@ -51,15 +51,10 @@ const AuthView = ({ client }) => {
 				variables: { key: code }
 			})
 
-			if (data.AuthWithToken.errors && data.AuthWithToken.errors.length > 0) {
-				return setState(prevState => ({ ...prevState, isSubmiting: false, errors: data.AuthWithToken.errors }))
-			}
-
-			localStorage.setItem(AUTH_TOKEN_KEY, data.AuthWithToken.token)
+			localStorage.setItem(AUTH_TOKEN_KEY, data.authWithToken.token)
 			window.location.reload()
 		} catch (error) {
-			console.log(error);
-			setState(prevState => ({ ...prevState, errors: error.errors || [] }))
+			setState(prevState => ({ ...prevState, isSubmiting: false, errors: error.errors || [] }))
 		}
 	}
 
@@ -85,7 +80,7 @@ const AuthView = ({ client }) => {
 				<Button
 					onClick={handleSubmit}
 					disabled={code.length === 0 || isSubmiting}
-					style={{ padding: "20px 50px", fontSize: 32 }}
+					style={{ padding: '20px 50px', fontSize: 32 }}
 				>
 					Authenticate
 				</Button>

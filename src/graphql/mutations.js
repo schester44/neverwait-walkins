@@ -1,13 +1,9 @@
-import gql from "graphql-tag"
+import gql from 'graphql-tag'
 
 export const authWithToken = gql`
-	mutation AuthWithToken($key: String!) {
-		AuthWithToken(key: $key) {
-			ok
+	mutation authWithToken($key: String!) {
+		authWithToken(key: $key) {
 			token
-			errors {
-				message
-			}
 		}
 	}
 `
@@ -15,7 +11,6 @@ export const authWithToken = gql`
 export const findOrCreateCustomerMutation = gql`
 	mutation findOrCreateCustomer($input: CreateCustomerInput!) {
 		findOrCreateCustomer(input: $input) {
-			ok
 			customer {
 				id
 				firstName
@@ -28,7 +23,6 @@ export const findOrCreateCustomerMutation = gql`
 export const upsertAppointmentMutation = gql`
 	mutation upsert($input: AppointmentInput!) {
 		upsertAppointment(input: $input) {
-			ok
 			appointment {
 				id
 				startTime
@@ -46,9 +40,6 @@ export const upsertAppointmentMutation = gql`
 					firstName
 					lastName
 				}
-			}
-			errors {
-				message
 			}
 		}
 	}
