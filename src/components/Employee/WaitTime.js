@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react"
-import Container from "./Container"
+import React, { useState, useEffect } from 'react'
+import Container from './Container'
 
-import waitTimeInMinutes from "./utils/waitTimeInMinutes"
-import timeFragmentsFromMinutes from "./utils/timeFragments"
+import waitTimeInMinutes from './utils/waitTimeInMinutes'
+import timeFragmentsFromMinutes from './utils/timeFragments'
 
 const Employee = ({ employee, onClick }) => {
 	const [waitTime, setWaitTime] = useState(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
@@ -10,23 +10,20 @@ const Employee = ({ employee, onClick }) => {
 	useEffect(() => {
 		const timer = window.setInterval(() => {
 			setWaitTime(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
-		}, 60000)
+		}, 3000)
 
 		return () => {
 			window.clearInterval(timer)
 		}
-	}, [])
+	}, [employee.appointments, employee.blockedTimes])
 
-	useEffect(
-		() => {
-			const newWaitTime = waitTimeInMinutes(employee.appointments, employee.blockedTimes)
+	useEffect(() => {
+		const newWaitTime = waitTimeInMinutes(employee.appointments, employee.blockedTimes)
 
-			if (waitTime !== newWaitTime) {
-				setWaitTime(newWaitTime)
-			}
-		},
-		[employee.appointments, employee.blockedTimes]
-	)
+		if (waitTime !== newWaitTime) {
+			setWaitTime(newWaitTime)
+		}
+	}, [employee.appointments, employee.blockedTimes])
 
 	const time = timeFragmentsFromMinutes(waitTime)
 
@@ -44,7 +41,7 @@ const Employee = ({ employee, onClick }) => {
 							{time.hours > 0 ? (
 								<span>
 									{time.hours}
-									<span className="small"> hr{time.hours > 1 && "s"}</span> {time.minutes}
+									<span className="small"> hr{time.hours > 1 && 's'}</span> {time.minutes}
 									<span className="small"> minutes</span>
 								</span>
 							) : (

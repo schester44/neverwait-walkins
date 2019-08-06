@@ -37,7 +37,6 @@ const App = ({ location }) => {
 			<GuestRoute path="/auth" component={Auth} />
 			<AuthenticatedRoutes>
 				{({ location }) => {
-					console.log({ location })
 					return (
 						<React.Fragment>
 							<Route
