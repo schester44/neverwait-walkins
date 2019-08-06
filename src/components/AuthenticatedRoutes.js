@@ -63,7 +63,6 @@ class AuthenticatedRoutes extends React.Component {
 	}
 
 	onBlockedTimeUpdate = (prev, { subscriptionData }) => {
-		console.log(subscriptionData)
 		if (!subscriptionData.data || !subscriptionData.data.BlockedTimeChange) return
 
 		const { blockedTime, deleted, employeeId } = subscriptionData.data.BlockedTimeChange

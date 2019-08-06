@@ -10,7 +10,7 @@ const Employee = ({ employee, onClick }) => {
 	useEffect(() => {
 		const timer = window.setInterval(() => {
 			setWaitTime(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
-		}, 3000)
+		}, 60000)
 
 		return () => {
 			window.clearInterval(timer)
