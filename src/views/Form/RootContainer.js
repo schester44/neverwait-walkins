@@ -183,7 +183,7 @@ const RootContainer = ({
 			})
 
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
-			history.push({ pathname: '/finished', appointment: upsertAppointment.appointment })
+			history.push({ pathname: '/finished', appointment: upsertAppointment })
 		} catch (error) {
 			logError(error)
 			setState(prevState => ({ ...prevState, isSubmitting: false }))

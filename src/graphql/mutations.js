@@ -21,23 +21,21 @@ export const findOrCreateCustomerMutation = gql`
 export const upsertAppointmentMutation = gql`
 	mutation upsert($input: AppointmentInput!) {
 		upsertAppointment(input: $input) {
-			appointment {
+			id
+			startTime
+			endTime
+			duration
+			services {
+				name
+			}
+			employee {
+				firstName
+				lastName
+			}
+			customer {
 				id
-				startTime
-				endTime
-				duration
-				services {
-					name
-				}
-				employee {
-					firstName
-					lastName
-				}
-				customer {
-					id
-					firstName
-					lastName
-				}
+				firstName
+				lastName
 			}
 		}
 	}
