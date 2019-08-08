@@ -8,16 +8,12 @@ import { ApolloLink, split } from 'apollo-link'
 import { getMainDefinition } from 'apollo-utilities'
 import { AUTH_TOKEN_KEY } from '../constants'
 import config from '../config'
-import { logError } from '../utils'
+
+import { logError } from '../utils/logging'
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
-	if (networkError) {
-		
-		if (networkError.result && networkError.result.errors) {
-			networkError.result.errors.forEach(logError)
-		}
-
-		console.log(networkError)
+	if (networkError && networkError.result && networkError.result.errors) {
+		networkError.result.errors.forEach(logError)
 	}
 
 	if (graphQLErrors) {

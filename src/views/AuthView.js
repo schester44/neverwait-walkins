@@ -6,7 +6,6 @@ import { authWithToken } from '../graphql/mutations'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import { AUTH_TOKEN_KEY } from '../constants'
-import { logError } from '../utils'
 
 const Wrapper = styled('div')`
 	height: 100%;
@@ -54,7 +53,6 @@ const AuthView = ({ client }) => {
 			localStorage.setItem(AUTH_TOKEN_KEY, data.authWithToken.token)
 			window.location.reload()
 		} catch (error) {
-			logError(error)
 			setState(prevState => ({ ...prevState, isSubmiting: false, errors: error.errors || [] }))
 		}
 	}

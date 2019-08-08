@@ -1,37 +1,15 @@
-import React from "react"
-import { withRouter, Switch, Route } from "react-router-dom"
+import React from 'react'
+import { withRouter, Switch, Route } from 'react-router-dom'
 
-import AuthenticatedRoutes from "./components/AuthenticatedRoutes"
-import GuestRoute from "./components/GuestRoute"
+import AuthenticatedRoutes from './components/AuthenticatedRoutes'
+import GuestRoute from './components/GuestRoute'
 
-import Auth from "./views/AuthView"
-import MultiResourceHomeView from "./views/CheckInScreen"
-import Form from "./views/Form/RootContainer"
-import Finished from "./views/Form/FinishedView"
+import Auth from './views/AuthView'
+import MultiResourceHomeView from './views/CheckInScreen'
+import Form from './views/Form/RootContainer'
+import Finished from './views/Form/FinishedView'
 
-const useInputListener = (cb, options = {}) => {
-	React.useEffect(() => {
-		const handler = event => {
-			if (options.exclude && event.target.className === options.exclude) return
-
-			document.activeElement.blur()
-
-			const inputs = document.querySelectorAll("input")
-
-			for (var i = 0; i < inputs.length; i++) {
-				cb(inputs[i])
-			}
-		}
-
-		document.addEventListener(options.event || "click", handler)
-
-		return () => document.removeEventListener(options.event || "click", handler)
-	}, [])
-}
-
-const App = ({ location }) => {
-	useInputListener(input => input.blur(), { exclude: "input-wrapper" })
-
+const App = () => {
 	return (
 		<Switch>
 			<GuestRoute path="/auth" component={Auth} />
@@ -51,9 +29,7 @@ const App = ({ location }) => {
 							<Route
 								path="/sign-in/:employeeId"
 								render={props => {
-									const employee = location.employees.find(
-										emp => +emp.id === +props.match.params.employeeId
-									)
+									const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
 									return (
 										<Form
 											locationId={location.id}
