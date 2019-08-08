@@ -1,20 +1,24 @@
-import { ApolloClient } from "apollo-client"
-import { InMemoryCache } from "apollo-cache-inmemory"
-import { onError } from "apollo-link-error"
+import { ApolloClient } from 'apollo-client'
+import { InMemoryCache } from 'apollo-cache-inmemory'
+import { onError } from 'apollo-link-error'
 
-import { HttpLink } from "apollo-link-http"
-import { WebSocketLink } from "apollo-link-ws"
-import { ApolloLink, split } from "apollo-link"
-import { getMainDefinition } from "apollo-utilities"
-import { AUTH_TOKEN_KEY } from "../constants"
-import config from "../config"
+import { HttpLink } from 'apollo-link-http'
+import { WebSocketLink } from 'apollo-link-ws'
+import { ApolloLink, split } from 'apollo-link'
+import { getMainDefinition } from 'apollo-utilities'
+import { AUTH_TOKEN_KEY } from '../constants'
+import config from '../config'
+import { logError } from '../utils'
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	if (networkError) {
-		console.log("this device is offline...[TODO]: handle this error")
+		networkError.result.errors.forEach(logError)
+		console.log(networkError)
 	}
 
-	console.log({ graphQLErrors, networkError })
+	if (graphQLErrors) {
+		graphQLErrors.forEach(logError)
+	}
 })
 
 const AuthLink = new ApolloLink((operation, forward) => {
@@ -22,7 +26,7 @@ const AuthLink = new ApolloLink((operation, forward) => {
 	if (token) {
 		operation.setContext({
 			headers: {
-				"x-access-token": token
+				'x-access-token': token
 			}
 		})
 	}
@@ -34,7 +38,7 @@ const AuthLink = new ApolloLink((operation, forward) => {
 		} = context
 
 		if (headers) {
-			const token = headers.get("x-access-token")
+			const token = headers.get('x-access-token')
 
 			if (token) {
 				localStorage.setItem(AUTH_TOKEN_KEY, token)
@@ -52,8 +56,7 @@ export const wsLink = new WebSocketLink({
 		lazy: true,
 		connectionParams: {
 			token:
-				console.log("subscription token:", localStorage.getItem(AUTH_TOKEN_KEY)) ||
-				localStorage.getItem(AUTH_TOKEN_KEY)
+				console.log('subscription token:', localStorage.getItem(AUTH_TOKEN_KEY)) || localStorage.getItem(AUTH_TOKEN_KEY)
 		}
 	}
 })
@@ -69,7 +72,7 @@ export const httpLink = ApolloLink.from([
 const link = split(
 	({ query }) => {
 		const { kind, operation } = getMainDefinition(query)
-		return kind === "OperationDefinition" && operation === "subscription"
+		return kind === 'OperationDefinition' && operation === 'subscription'
 	},
 	wsLink,
 	httpLink

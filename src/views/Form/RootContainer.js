@@ -14,6 +14,7 @@ import determineStartTime from './utils/determineStartTime'
 import ServiceSelector from '../../components/ServiceSelector'
 import Input from '../../components/Input'
 import Button from '../../components/Button'
+import { logError } from '../../utils'
 
 const Wrapper = styled('div')`
 	width: 100%;
@@ -184,6 +185,7 @@ const RootContainer = ({
 			// show the Finished route and pass the appointment as route state so we can show the estimated start time
 			history.push({ pathname: '/finished', appointment: upsertAppointment.appointment })
 		} catch (error) {
+			logError(error)
 			setState(prevState => ({ ...prevState, isSubmitting: false }))
 		}
 	}

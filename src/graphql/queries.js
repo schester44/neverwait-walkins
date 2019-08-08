@@ -5,6 +5,7 @@ export const LOCATION_QUERY = gql`
 		location {
 			id
 			name
+			qe
 			employees(input: { where: { bookingEnabled: true } }) {
 				id
 				firstName
