@@ -12,7 +12,9 @@ import { logError } from '../utils'
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	if (networkError) {
-		networkError.result.errors.forEach(logError)
+		if (networkError.result && network.result.errors) {
+			networkError.result.errors.forEach(logError)
+		}
 		console.log(networkError)
 	}
 
