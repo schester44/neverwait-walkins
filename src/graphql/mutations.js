@@ -11,11 +11,9 @@ export const authWithToken = gql`
 export const findOrCreateCustomerMutation = gql`
 	mutation findOrCreateCustomer($input: CreateCustomerInput!) {
 		findOrCreateCustomer(input: $input) {
-			customer {
-				id
-				firstName
-				lastName
-			}
+			id
+			firstName
+			lastName
 		}
 	}
 `

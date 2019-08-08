@@ -160,7 +160,7 @@ const RootContainer = ({
 					}
 				})
 
-				customerId = findOrCreateCustomer.customer.id
+				customerId = findOrCreateCustomer.id
 			}
 
 			const lastAppt = getLastAppointment([...appointments, ...blockedTimes])
