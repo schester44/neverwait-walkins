@@ -4,7 +4,6 @@ export const LOCATION_QUERY = gql`
 	query LocationQuery($startTime: String!, $endTime: String!) {
 		location {
 			id
-			ww
 			name
 			employees(input: { where: { bookingEnabled: true } }) {
 				id
