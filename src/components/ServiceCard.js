@@ -1,7 +1,7 @@
-import React from "react"
-import styled from "styled-components"
+import React from 'react'
+import styled from 'styled-components'
 
-const Container = styled("div")`
+const Container = styled('div')`
 	position: relative;
 	margin: 10px;
 	background: rgba(37, 43, 50, 1);
@@ -14,22 +14,22 @@ const Container = styled("div")`
 	align-items: center;
 	max-height: 150px;
 
-	${({ selected }) =>
-		selected &&
-		`
-		color: rgba(237, 209, 129, 1.0);
-
 	&:before {
 		position: absolute;
 		width: 22px;
 		height: 22px;
 		border-radius: 50%;
-		border: 2px solid rgba(237, 209, 129, 1.0);
+		border: 2px solid rgba(237, 209, 129, 1);
 		z-index: 99;
 		top: calc(50% - 11px);
 		left: 18px;
-		content: "";
+		content: '';
 	}
+
+	${({ selected }) =>
+		selected &&
+		`
+		color: rgba(237, 209, 129, 1.0);
 
 	&:after {
 		position: absolute;

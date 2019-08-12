@@ -23,7 +23,8 @@ const Employee = ({ employee, onClick }) => {
 		if (waitTime !== newWaitTime) {
 			setWaitTime(newWaitTime)
 		}
-	}, [employee.appointments, employee.blockedTimes])
+
+	}, [employee.appointments, waitTime, employee.blockedTimes])
 
 	const time = timeFragmentsFromMinutes(waitTime)
 

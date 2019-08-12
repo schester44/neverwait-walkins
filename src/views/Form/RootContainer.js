@@ -98,10 +98,6 @@ const RootContainer = ({
 				setActiveCustomer(undefined)
 			}
 
-			if (state.selectedService) {
-				setState(prevState => ({ ...prevState, selectedService: undefined }))
-			}
-
 			return
 		}
 
@@ -135,17 +131,15 @@ const RootContainer = ({
 					}
 				}
 			})
-	}, [customer.contactNumber])
+	}, [customer.contactNumber, client])
 
 	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService || state.isSubmitting
 
 	const handleSubmit = async () => {
 		setState(prevState => ({ ...prevState, isSubmitting: true }))
 
-		console.log(appointment.services);
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
 		const duration = appointment.services.reduce((acc, id) => {
-			console.log(state.services, id);
 			return acc + state.services[id].duration
 		}, 0)
 
