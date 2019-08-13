@@ -16,7 +16,11 @@ Sentry.init({
 })
 
 Sentry.configureScope(scope => {
-	const token = decode(localStorage.getItem('AuthToken'))
+	const storedToken = localStorage.getItem('AuthToken')
+
+	if (!storedToken) return
+
+	const token = decode(storedToken)
 
 	scope.setTag('has_token', !!token)
 
