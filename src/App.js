@@ -10,6 +10,8 @@ import Form from './views/Form/RootContainer'
 import Finished from './views/Form/FinishedView'
 
 const App = () => {
+	console.log('[App]')
+
 	return (
 		<Switch>
 			<GuestRoute path="/auth" component={Auth} />

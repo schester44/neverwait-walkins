@@ -79,6 +79,8 @@ const RootContainer = ({
 	locationId,
 	services = []
 }) => {
+	console.log('[RootContainer]')
+	
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
 	const [customer, setCustomer] = useState({ firstName: '', lastName: '', contactNumber: '' })
 	const [activeCustomer, setActiveCustomer] = useState(undefined)

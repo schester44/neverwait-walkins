@@ -33,6 +33,7 @@ const Errors = styled('div')`
 `
 
 const AuthView = ({ client }) => {
+	console.log('[AuthView]')
 	const [state, setState] = useState({
 		isSubmiting: false,
 		code: '',

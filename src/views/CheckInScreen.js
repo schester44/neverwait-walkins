@@ -40,6 +40,8 @@ const configPlaceholder = (
 )
 
 const MultiResource = ({ employees }) => {
+	console.log('[CheckinScreen]')
+
 	return (
 		<Wrapper>
 			<div className="header">

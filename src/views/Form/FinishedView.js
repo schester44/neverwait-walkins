@@ -81,6 +81,8 @@ const vowels = {
 }
 
 const Finished = ({ history, location: { appointment } }) => {
+	console.log('[FinishedView]')
+
 	useEffect(() => {
 		const timeout = window.setTimeout(() => {
 			history.push("/")
