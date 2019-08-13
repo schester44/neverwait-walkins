@@ -1,3 +1,4 @@
+import decode from 'jwt-decode'
 import * as Sentry from '@sentry/browser'
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -14,4 +15,28 @@ Sentry.init({
 	}
 })
 
-export const logError = error => isProd && Sentry.captureEvent(error)
+Sentry.configureScope(scope => {
+	const token = decode(localStorage.getItem('AuthToken'))
+
+	scope.setTag('has_token', !!token)
+
+	if (!token) return
+
+	scope.setExtra('locationId', token.locationId)
+	scope.setExtra('companyId', token.companyId)
+})
+
+export const logError = error => {
+	if (!isProd) {
+		console.log(error)
+		return
+	}
+
+	Sentry.withScope(scope => {
+		if (error.data) {
+			scope.setExtra('data', error.data)
+		}
+
+		Sentry.captureEvent(error)
+	})
+}

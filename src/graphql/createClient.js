@@ -17,6 +17,7 @@ const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	}
 
 	if (graphQLErrors) {
+		console.log(graphQLErrors);
 		graphQLErrors.forEach(logError)
 	}
 })
@@ -29,6 +30,8 @@ const AuthLink = new ApolloLink((operation, forward) => {
 				'x-access-token': token
 			}
 		})
+	} else {
+		console.log('(AuthLink): Token not available', token)
 	}
 
 	return forward(operation).map(response => {
@@ -42,6 +45,8 @@ const AuthLink = new ApolloLink((operation, forward) => {
 
 			if (token) {
 				localStorage.setItem(AUTH_TOKEN_KEY, token)
+			} else {
+				console.log('(AuthLink:middleware): TokenNotAvailable')
 			}
 		}
 
