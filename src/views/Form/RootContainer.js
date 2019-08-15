@@ -80,7 +80,7 @@ const RootContainer = ({
 	services = []
 }) => {
 	console.log('[RootContainer]')
-	
+
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
 	const [customer, setCustomer] = useState({ firstName: '', lastName: '', contactNumber: '' })
 	const [activeCustomer, setActiveCustomer] = useState(undefined)
@@ -141,9 +141,7 @@ const RootContainer = ({
 		setState(prevState => ({ ...prevState, isSubmitting: true }))
 
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
-		const duration = appointment.services.reduce((acc, id) => {
-			return acc + state.services[id].duration
-		}, 0)
+		const duration = appointment.services.reduce((acc, id) => acc + state.services[id].sources[0].duration, 0)
 
 		try {
 			let customerId = (activeCustomer || {}).id
@@ -172,6 +170,8 @@ const RootContainer = ({
 				variables: {
 					input: {
 						...appointment,
+						// Hardcode the 'default' Source type
+						sourceId: 1,
 						startTime,
 						endTime,
 						customerId

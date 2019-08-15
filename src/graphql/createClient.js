@@ -24,6 +24,7 @@ const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 
 const AuthLink = new ApolloLink((operation, forward) => {
 	const token = localStorage.getItem(AUTH_TOKEN_KEY)
+	
 	if (token) {
 		operation.setContext({
 			headers: {
@@ -45,8 +46,9 @@ const AuthLink = new ApolloLink((operation, forward) => {
 
 			if (token) {
 				localStorage.setItem(AUTH_TOKEN_KEY, token)
+				console.log('(AuthLink:middleware): TokenStored')
 			} else {
-				console.log('(AuthLink:middleware): TokenNotAvailable')
+				console.log('(AuthLink:middleware): TokenNotSent')
 			}
 		}
 
