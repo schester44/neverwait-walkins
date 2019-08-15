@@ -159,7 +159,7 @@ const RootContainer = ({
 				customerId = findOrCreateCustomer.id
 			}
 
-			const lastAppt = getLastAppointment([...appointments, ...blockedTimes])
+			const lastAppt = getLastAppointment([...appointments, ...blockedTimes], duration)
 			const startTime = determineStartTime(lastAppt)
 			const endTime = format(addMinutes(startTime, duration))
 
@@ -170,8 +170,6 @@ const RootContainer = ({
 				variables: {
 					input: {
 						...appointment,
-						// Hardcode the 'default' Source type
-						sourceId: 1,
 						startTime,
 						endTime,
 						customerId
