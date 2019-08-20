@@ -30,6 +30,7 @@ const Errors = styled('div')`
 	margin-bottom: 25px;
 	border-radius: 5px;
 	padding: 15px 25px;
+	background: tomato;
 `
 
 const AuthView = ({ client }) => {
@@ -54,7 +55,7 @@ const AuthView = ({ client }) => {
 			localStorage.setItem(AUTH_TOKEN_KEY, data.authWithToken.token)
 			window.location.reload()
 		} catch (error) {
-			setState(prevState => ({ ...prevState, isSubmiting: false, errors: error.errors || [] }))
+			setState(prevState => ({ ...prevState, isSubmiting: false, errors: error.graphQLErrors || [] }))
 		}
 	}
 
@@ -62,9 +63,10 @@ const AuthView = ({ client }) => {
 		<Wrapper>
 			{errors.length > 0 && (
 				<Errors>
-					{errors.map(({ message }, i) => (
-						<p key={i}>{message}</p>
-					))}
+					{errors.map(({ message }, i) => {
+						console.log(message)
+						return <p key={i}>{message}</p>
+					})}
 				</Errors>
 			)}
 
