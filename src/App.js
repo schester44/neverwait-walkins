@@ -10,26 +10,27 @@ import Form from './views/Form/RootContainer'
 import Finished from './views/Form/FinishedView'
 
 const RefreshBtn = () => {
-		const [count, setCount] = React.useState(0)
+	const [count, setCount] = React.useState(0)
 
-		React.useEffect(() => {
-			let timeout = window.setTimeout(() => {
-				setCount(0)
-			}, 2000)
+	React.useEffect(() => {
+		let timeout = window.setTimeout(() => {
+			setCount(0)
+		}, 2000)
 
-			if (count === 3) {
-				window.location.reload()
-			}
+		if (count === 3) {
+			window.location.reload()
+		}
 
-			return () => window.clearTimeout(timeout)
+		return () => window.clearTimeout(timeout)
+	}, [count])
 
-		}, [count])
-
-		return <div onClick={() => setCount(count => count + 1)} style={{ position: 'fixed', top: 0, right: 0, width: 100, height: 100 }}>
-			
-			</div>
-	}
-
+	return (
+		<div
+			onClick={() => setCount(count => count + 1)}
+			style={{ position: 'fixed', top: 0, right: 0, width: 100, height: 100 }}
+		/>
+	)
+}
 
 const App = () => {
 	return (
