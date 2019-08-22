@@ -82,7 +82,7 @@ const RootContainer = ({
 	console.log('[RootContainer]')
 
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
-	const [customer, setCustomer] = useState({ firstName: '', lastName: '', contactNumber: '' })
+	const [customer, setCustomer] = useState({ firstName: '', lastName: '', phoneNumber: '' })
 	const [activeCustomer, setActiveCustomer] = useState(undefined)
 
 	const [state, setState] = useState({
@@ -95,7 +95,7 @@ const RootContainer = ({
 	})
 
 	useEffect(() => {
-		if (!customer.contactNumber || customer.contactNumber.length < 10) {
+		if (!customer.phoneNumber || customer.phoneNumber.length < 10) {
 			if (activeCustomer) {
 				setActiveCustomer(undefined)
 			}
@@ -108,7 +108,7 @@ const RootContainer = ({
 				query: searchCustomers,
 				variables: {
 					input: {
-						term: customer.contactNumber
+						term: customer.phoneNumber
 					}
 				}
 			})
@@ -133,9 +133,9 @@ const RootContainer = ({
 					}
 				}
 			})
-	}, [customer.contactNumber, client])
+	}, [customer.phoneNumber, client])
 
-	const btnDisabled = customer.contactNumber.length < 10 || !state.selectedService || state.isSubmitting
+	const btnDisabled = customer.phoneNumber.length < 10 || !state.selectedService || state.isSubmitting
 
 	const handleSubmit = async () => {
 		setState(prevState => ({ ...prevState, isSubmitting: true }))
@@ -199,10 +199,10 @@ const RootContainer = ({
 						placeholder="Phone Number"
 						type="number"
 						pattern="\d*"
-						name="contactNumber"
-						value={customer.contactNumber}
+						name="phoneNumber"
+						value={customer.phoneNumber}
 						onChange={({ target: { value } }) => {
-							setCustomer(prevState => ({ ...prevState, contactNumber: value }))
+							setCustomer(prevState => ({ ...prevState, phoneNumber: value }))
 						}}
 					/>
 				</div>
@@ -244,7 +244,7 @@ const RootContainer = ({
 						{btnDisabled
 							? state.isSubmitting
 								? 'Submitting'
-								: customer.contactNumber.length < 10
+								: customer.phoneNumber.length < 10
 								? 'Enter valid phone number'
 								: !state.selectedService
 								? 'Select a service'
