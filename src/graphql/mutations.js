@@ -20,7 +20,7 @@ export const findOrCreateCustomerMutation = gql`
 
 export const upsertAppointmentMutation = gql`
 	mutation upsert($input: AppointmentInput!) {
-		upsertAppointment(input: $input) {
+		upsertAppointment(sourceType: walkin, input: $input) {
 			id
 			startTime
 			endTime
