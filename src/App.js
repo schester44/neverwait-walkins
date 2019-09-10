@@ -47,7 +47,9 @@ const App = () => {
 									path="/"
 									render={props => {
 										const employees = location.employees.filter(emp => emp.services.length > 0)
-										return <MultiResourceHomeView employees={employees} location={location} />
+										return (
+											<MultiResourceHomeView employees={employees} location={location} company={location.company} />
+										)
 									}}
 								/>
 
@@ -57,6 +59,7 @@ const App = () => {
 										const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
 										return (
 											<Form
+												company={location.company}
 												locationId={location.id}
 												employeeId={employee.id}
 												services={employee.services}
@@ -66,7 +69,11 @@ const App = () => {
 										)
 									}}
 								/>
-								<Route path="/finished" locationId={location.id} component={Finished} />
+								<Route
+									path="/finished"
+									locationId={location.id}
+									render={props => <Finished {...props} company={location.company} />}
+								/>
 							</React.Fragment>
 						)
 					}}

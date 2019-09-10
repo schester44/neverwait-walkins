@@ -55,9 +55,18 @@ const Header = styled('div')`
 
 	h1 {
 		padding-top: 20px;
-		font-family: marguerite;
-		font-size: 62px;
 		color: rgba(242, 209, 116, 1);
+
+		${({ isLorenzo }) =>
+			isLorenzo
+				? `
+			font-family: marguerite;	
+			font-size: 62px;
+		`
+				: `
+			font-family: Domus;
+			font-size: 48px;
+		`}
 	}
 `
 
@@ -73,6 +82,7 @@ const ActiveCustomer = styled('div')`
 const RootContainer = ({
 	client,
 	history,
+	company,
 	appointments = [],
 	blockedTimes = [],
 	employeeId,
@@ -191,9 +201,9 @@ const RootContainer = ({
 
 	return (
 		<Wrapper>
-			<Header>
+			<Header isLorenzo={company.name === `Lorenzo's`}>
 				<Link to="/">
-					<h1>Lorenzo's</h1>
+					<h1>{company.name}</h1>
 				</Link>
 			</Header>
 
