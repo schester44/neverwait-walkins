@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import Container from './Container'
 
 import waitTimeInMinutes from './utils/waitTimeInMinutes'
-import timeFragmentsFromMinutes from './utils/timeFragments'
+import timeFragments from './utils/timeFragments'
+import addMinutes from 'date-fns/add_minutes'
+import format from 'date-fns/format'
 
 const Employee = ({ employee, onClick }) => {
 	const [waitTime, setWaitTime] = useState(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
@@ -23,36 +25,27 @@ const Employee = ({ employee, onClick }) => {
 		if (waitTime !== newWaitTime) {
 			setWaitTime(newWaitTime)
 		}
-
 	}, [employee.appointments, waitTime, employee.blockedTimes])
 
-	const time = timeFragmentsFromMinutes(waitTime)
-
+	const time = timeFragments(waitTime)
 	return (
 		<Container>
-			<div className="person">{employee.firstName}</div>
+			<div className="left">
+				<div className="person">{employee.firstName}</div>
+
+				<div className="wait-time">
+					<h1>
+						Next Available Time: <span className="highlight">{format(addMinutes(new Date(), waitTime), 'h:mma')}</span>
+						<span style={{ fontSize: 14 }}>
+							{' '}
+							({time.hours > 0 && `${time.hours} ${time.hours === 1 ? 'hour' : 'hours'}`} {time.minutes}{' '}
+							{time.minutes >= 1 && time.minutes === 1 ? 'min' : 'minutes'})
+						</span>
+					</h1>
+				</div>
+			</div>
 
 			<div className="right">
-				<div className="wait-time">
-					{waitTime >= 5 && <p>Est. Wait Time</p>}
-					{waitTime < 5 ? (
-						<h1>No Wait</h1>
-					) : (
-						<h1>
-							{time.hours > 0 ? (
-								<span>
-									{time.hours}
-									<span className="small"> hr{time.hours > 1 && 's'}</span> {time.minutes}
-									<span className="small"> minutes</span>
-								</span>
-							) : (
-								<span>
-									{time.minutes} <span className="small">minutes</span>
-								</span>
-							)}
-						</h1>
-					)}
-				</div>
 				<button onClick={onClick}>SIGN IN</button>
 			</div>
 		</Container>

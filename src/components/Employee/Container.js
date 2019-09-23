@@ -1,6 +1,6 @@
-import styled from "styled-components"
+import styled from 'styled-components'
 
-export default styled("div")`
+export default styled('div')`
 	margin: 25px;
 	background: rgba(37, 43, 50, 1);
 	box-shadow: 1px 3px 8px rgba(32, 32, 32, 0.05);
@@ -17,19 +17,14 @@ export default styled("div")`
 	}
 
 	.wait-time {
-		margin-right: 25px;
-		text-align: right;
-
 		h1 {
 			font-weight: 100;
 			margin: 0;
+			font-size: 24px;
 		}
 
-		p {
-			opacity: 0.5;
-			font-weight: 100;
-			line-height: 0.8;
-			margin: 0;
+		span.highlight {
+			color: rgba(237, 209, 129, 1);
 		}
 	}
 
