@@ -28,25 +28,55 @@ const Employee = ({ employee, onClick }) => {
 	}, [employee.appointments, waitTime, employee.blockedTimes])
 
 	const time = timeFragments(waitTime)
-	return (
-		<Container>
-			<div className="left">
-				<div className="person">{employee.firstName}</div>
+	const isWait = time.hours > 0 || time.minutes > 0
 
-				<div className="wait-time">
-					<h1>
-						Next Available Time: <span className="highlight">{format(addMinutes(new Date(), waitTime), 'h:mma')}</span>
-						<span style={{ fontSize: 14 }}>
-							{' '}
-							({time.hours > 0 && `${time.hours} ${time.hours === 1 ? 'hour' : 'hours'}`} {time.minutes}{' '}
-							{time.minutes >= 1 && time.minutes === 1 ? 'min' : 'minutes'})
-						</span>
-					</h1>
+	return (
+		<Container onClick={onClick}>
+			<div className="left">
+				<div>
+					<div className={`person ${isWait ? 'has-wait' : ''}`}>
+						<div className="avatar">{employee.firstName.charAt(0)}</div>
+
+						<span>{employee.firstName}</span>
+					</div>
+
+					{isWait && (
+						<div className="wait-time">
+							<div className="wait-time--title">Next Available Time</div>
+							<h1 className="wait-time--highlight">
+								{format(addMinutes(new Date(), waitTime), 'h:mma')}
+
+								{(time.hours > 0 || time.minutes > 0) && (
+									<span style={{ fontSize: 20, color: '#fff', opacity: 0.3, marginLeft: 8 }}>
+										(
+										{time.hours > 0 && (
+											<span>
+												{time.hours} {time.hours === 1 ? 'hour' : 'hours'}
+											</span>
+										)}
+										{time.minutes > 0 && (
+											<span>
+												{time.hours > 0 && ' '}
+												{time.minutes} {time.minutes === 1 ? 'min' : 'minutes'}
+											</span>
+										)}
+										)
+									</span>
+								)}
+							</h1>
+						</div>
+					)}
+
+					{!isWait && (
+						<div className="wait-time">
+							<h1 className="wait-time--highlight">Available Now</h1>
+						</div>
+					)}
 				</div>
 			</div>
 
 			<div className="right">
-				<button onClick={onClick}>SIGN IN</button>
+				<button>SIGN IN</button>
 			</div>
 		</Container>
 	)

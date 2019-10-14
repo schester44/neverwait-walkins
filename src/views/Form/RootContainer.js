@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { withRouter, Link } from 'react-router-dom'
 import { withApollo } from 'react-apollo'
-
+import { FiArrowLeft } from 'react-icons/fi'
 import format from 'date-fns/format'
 import addMinutes from 'date-fns/add_minutes'
 
@@ -51,6 +51,14 @@ const Header = styled('div')`
 
 	a {
 		text-decoration: none !important;
+	}
+
+	.back-btn {
+		color: #fff;
+		font-size: 48px;
+		position: fixed;
+		top: 16px;
+		left: 16px;
 	}
 
 	h1 {
@@ -203,6 +211,7 @@ const RootContainer = ({
 		<Wrapper>
 			<Header isLorenzo={company.name === `Lorenzo's`}>
 				<Link to="/">
+					<FiArrowLeft className="back-btn" />
 					<h1>{company.name}</h1>
 				</Link>
 			</Header>

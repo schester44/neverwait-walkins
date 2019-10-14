@@ -3,6 +3,8 @@ import { Link, Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 import { format } from 'date-fns'
 
+import { FiArrowLeft } from 'react-icons/fi'
+
 import Button from '../../components/Button'
 
 const Wrapper = styled('div')`
@@ -113,6 +115,8 @@ const Finished = ({ history, company, location: { appointment } }) => {
 
 			<Content>
 				<div className="body">
+					<p style={{ textAlign: 'center', color: 'rgba(45, 240, 163, 1.0)' }}>Success!</p>
+					
 					<p style={{ textAlign: 'center' }}>
 						<span>
 							You have created
