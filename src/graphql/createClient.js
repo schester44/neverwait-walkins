@@ -9,23 +9,34 @@ import { getMainDefinition } from 'apollo-utilities'
 import { AUTH_TOKEN_KEY } from '../constants'
 import config from '../config'
 
-import { logError } from '../utils/logging'
-
-const onErrorLink = onError(({ graphQLErrors, networkError }) => {
+const onErrorLink = onError(({ graphQLErrors, networkError, response }) => {
 	if (networkError && networkError.result && networkError.result.errors) {
-		networkError.result.errors.forEach(logError)
+		networkError.result.errors.forEach(error => {
+			console.log(error)
+		})
 	}
 
 	if (graphQLErrors) {
-		console.log(graphQLErrors);
-		graphQLErrors.forEach(logError)
+		graphQLErrors.forEach(error => {
+
+			// Only remove the token adn refresh the screen back to the auth screen if we're not already on the auth screen
+			if (
+				error.name === 'AuthenticationError' &&
+				error.data.INVALID_SUBSCRIPTION &&
+				window.location.pathname !== '/auth'
+			) {
+				localStorage.removeItem(AUTH_TOKEN_KEY)
+				window.location.reload()
+			}
+		})
 	}
 })
 
 const AuthLink = new ApolloLink((operation, forward) => {
 	const token = localStorage.getItem(AUTH_TOKEN_KEY)
-	
+
 	if (token) {
+		console.log('setting token context', token)
 		operation.setContext({
 			headers: {
 				'x-access-token': token

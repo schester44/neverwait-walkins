@@ -31,18 +31,3 @@ Sentry.configureScope(scope => {
 	scope.setExtra('locationId', token.locationId)
 	scope.setExtra('companyId', token.companyId)
 })
-
-export const logError = error => {
-	if (!isProd) {
-		console.log(error)
-		return
-	}
-
-	Sentry.withScope(scope => {
-		if (error.data) {
-			scope.setExtra('data', error.data)
-		}
-
-		Sentry.captureEvent(error)
-	})
-}

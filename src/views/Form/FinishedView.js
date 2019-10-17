@@ -3,8 +3,6 @@ import { Link, Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 import { format } from 'date-fns'
 
-import { FiArrowLeft } from 'react-icons/fi'
-
 import Button from '../../components/Button'
 
 const Wrapper = styled('div')`
