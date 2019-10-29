@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
-import { withApollo } from 'react-apollo'
+import { useMutation } from '@apollo/react-hooks'
+
 import { authWithToken } from '../graphql/mutations'
 
 import Input from '../components/Input'
@@ -8,13 +9,23 @@ import Button from '../components/Button'
 import { AUTH_TOKEN_KEY } from '../constants'
 
 const Wrapper = styled('div')`
-	height: 100%;
+	height: 60vh;
 	display: flex;
 	margin: 0 auto;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
 	width: 90%;
+
+	.header {
+		font-family: Domus, sans-serif;
+		font-size: 44px;
+		padding-top: 80px;
+	}
+
+	.form {
+		width: 100%;
+	}
 
 	.action {
 		width: 100%;
@@ -33,63 +44,63 @@ const Errors = styled('div')`
 	background: tomato;
 `
 
-const AuthView = ({ client }) => {
-	console.log('[AuthView]')
-	const [state, setState] = useState({
-		isSubmiting: false,
+const AuthView = () => {
+	const [auth, { loading }] = useMutation(authWithToken)
+
+	const [state, setState] = React.useState({
 		code: '',
 		errors: []
 	})
 
-	const { code, isSubmiting, errors } = state
+	const { code, errors } = state
 
 	const handleSubmit = async () => {
-		setState(prevState => ({ ...prevState, isSubmiting: true }))
-
 		try {
-			const { data } = await client.mutate({
-				mutation: authWithToken,
+			const { data } = await auth({
 				variables: { key: code }
 			})
 
 			localStorage.setItem(AUTH_TOKEN_KEY, data.authWithToken.token)
 			window.location.reload()
 		} catch (error) {
-			setState(prevState => ({ ...prevState, isSubmiting: false, errors: error.graphQLErrors || [] }))
+			setState(prevState => ({ ...prevState, errors: error.graphQLErrors || [] }))
 		}
 	}
 
 	return (
 		<Wrapper>
-			{errors.length > 0 && (
-				<Errors>
-					{errors.map(({ message }, i) => {
-						console.log(message)
-						return <p key={i}>{message}</p>
-					})}
-				</Errors>
-			)}
+			<h1 className="header">NEVERWAIT</h1>
 
-			<Input
-				placeholder="Auth Code"
-				type="text"
-				name="code"
-				autocapitalize="none"
-				value={code}
-				onChange={({ target: { value } }) => setState(prevState => ({ ...prevState, code: value }))}
-			/>
+			<div className="form">
+				{errors.length > 0 && (
+					<Errors>
+						{errors.map(({ message }, i) => (
+							<p key={i}>{message}</p>
+						))}
+					</Errors>
+				)}
 
-			<div className="action">
-				<Button
-					onClick={handleSubmit}
-					disabled={code.length === 0 || isSubmiting}
-					style={{ padding: '20px 50px', fontSize: 32 }}
-				>
-					Authenticate
-				</Button>
+				<Input
+					placeholder="Auth Code"
+					type="text"
+					name="code"
+					autocapitalize="none"
+					value={code}
+					onChange={({ target: { value } }) => setState(prevState => ({ ...prevState, code: value }))}
+				/>
+
+				<div className="action">
+					<Button
+						onClick={handleSubmit}
+						disabled={code.length === 0 || loading}
+						style={{ padding: '20px 50px', fontSize: 32 }}
+					>
+						Authenticate
+					</Button>
+				</div>
 			</div>
 		</Wrapper>
 	)
 }
 
-export default withApollo(AuthView)
+export default AuthView

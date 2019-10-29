@@ -20,7 +20,9 @@ const Wrapper = styled('div')`
 		}
 	}
 
-	${({ isLorenzo }) => isLorenzo ? `
+	${({ isLorenzo }) =>
+		isLorenzo
+			? `
 		.header {
 			font-family: marguerite;
 
@@ -28,7 +30,8 @@ const Wrapper = styled('div')`
 				font-size: 120px;
 			}
 		}
-	` : `
+	`
+			: `
 		.header {
 			font-family: Domus;
 		}
@@ -52,17 +55,20 @@ const configPlaceholder = (
 	</Config>
 )
 
-const MultiResource = ({ employees, company }) => {
-	console.log('[CheckinScreen]')
-	const isLorenzo = company.name === `Lorenzo's`
+const MultiResource = ({ employees, location, onFirstAvailableClick }) => {
+	const isLorenzo = location.company.name === `Lorenzo's`
 
 	return (
 		<Wrapper isLorenzo={isLorenzo}>
 			<div className="header">
-				<h1>{company.name}</h1>
+				<h1>{location.company.name}</h1>
 			</div>
 
-			{employees.length === 0 ? configPlaceholder : <EmployeeList employees={employees} />}
+			{employees.length === 0 ? (
+				configPlaceholder
+			) : (
+				<EmployeeList onFirstAvailableClick={onFirstAvailableClick} employees={employees} />
+			)}
 		</Wrapper>
 	)
 }

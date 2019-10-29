@@ -1,6 +1,6 @@
 import gql from 'graphql-tag'
 
-export const LOCATION_QUERY = gql`
+export const locationDataQuery = gql`
 	query LocationQuery($startTime: String!, $endTime: String!) {
 		location {
 			company {

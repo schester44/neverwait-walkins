@@ -1,32 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Container from './Container'
 
-import waitTimeInMinutes from './utils/waitTimeInMinutes'
 import timeFragments from './utils/timeFragments'
 import addMinutes from 'date-fns/add_minutes'
 import format from 'date-fns/format'
 
-const Employee = ({ employee, onClick }) => {
-	const [waitTime, setWaitTime] = useState(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
-
-	useEffect(() => {
-		const timer = window.setInterval(() => {
-			setWaitTime(waitTimeInMinutes(employee.appointments, employee.blockedTimes))
-		}, 60000)
-
-		return () => {
-			window.clearInterval(timer)
-		}
-	}, [employee.appointments, employee.blockedTimes])
-
-	useEffect(() => {
-		const newWaitTime = waitTimeInMinutes(employee.appointments, employee.blockedTimes)
-
-		if (waitTime !== newWaitTime) {
-			setWaitTime(newWaitTime)
-		}
-	}, [employee.appointments, waitTime, employee.blockedTimes])
-
+const Employee = ({ waitTime, employee, onClick }) => {
 	const time = timeFragments(waitTime)
 	const isWait = time.hours > 0 || time.minutes > 0
 

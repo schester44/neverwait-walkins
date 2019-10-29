@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { withRouter, Link } from 'react-router-dom'
+import { useHistory, useParams, Link } from 'react-router-dom'
 import { withApollo } from 'react-apollo'
 import { FiArrowLeft } from 'react-icons/fi'
 import format from 'date-fns/format'
@@ -87,16 +87,16 @@ const ActiveCustomer = styled('div')`
 	padding-bottom: 25px;
 `
 
-const RootContainer = ({
-	client,
-	history,
-	company,
-	appointments = [],
-	blockedTimes = [],
-	employeeId,
-	locationId,
-	services = []
-}) => {
+const RootContainer = ({ client, company, employees, locationId }) => {
+	const { employeeId } = useParams()
+
+	const employee = employees.find(emp => Number(emp.id) === Number(employeeId))
+	const history = useHistory()
+
+	const services = employee.services || []
+	const blockedTimes = employee.blockedTimes || []
+	const appointments = employee.appointments || []
+
 	console.log('[RootContainer]')
 
 	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
@@ -281,4 +281,4 @@ const RootContainer = ({
 	)
 }
 
-export default withRouter(withApollo(RootContainer))
+export default withApollo(RootContainer)

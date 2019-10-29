@@ -1,86 +1,118 @@
 import React from 'react'
-import { withRouter, Switch, Route } from 'react-router-dom'
-
-import AuthenticatedRoutes from './components/AuthenticatedRoutes'
-import GuestRoute from './components/GuestRoute'
+import { Switch, Route } from 'react-router-dom'
+import { useQuery } from '@apollo/react-hooks'
+import { produce } from 'immer'
+import startOfDay from 'date-fns/start_of_day'
+import endOfDay from 'date-fns/end_of_day'
 
 import Auth from './views/AuthView'
 import MultiResourceHomeView from './views/CheckInScreen'
 import Form from './views/Form/RootContainer'
 import Finished from './views/Form/FinishedView'
+import RefreshBtn from './components/RefreshBtn'
 
-const RefreshBtn = () => {
-	const [count, setCount] = React.useState(0)
+import { locationDataQuery } from './graphql/queries'
+import { isAuthenticated } from './graphql/utils'
+import { appointmentsSubscription } from './graphql/subscriptions'
 
-	React.useEffect(() => {
-		let timeout = window.setTimeout(() => {
-			setCount(0)
-		}, 2000)
-
-		if (count === 3) {
-			window.location.reload()
-		}
-
-		return () => window.clearTimeout(timeout)
-	}, [count])
-
-	return (
-		<div
-			onClick={() => setCount(count => count + 1)}
-			style={{ position: 'fixed', top: 0, right: 0, width: 100, height: 100 }}
-		/>
-	)
-}
+const isAuthed = isAuthenticated()
 
 const App = () => {
+	const [lastFirstAvailable, setLastFirstAvailable] = React.useState(undefined)
+
+	const { data, loading, subscribeToMore } = useQuery(locationDataQuery, {
+		skip: !isAuthed,
+		variables: {
+			startTime: startOfDay(new Date()),
+			endTime: endOfDay(new Date())
+		}
+	})
+
+	const location = data ? data.location : {}
+
+	React.useEffect(() => {
+		if (!isAuthed || !location.id) return
+
+		const unsubscribeFromSubscription = subscribeToMore({
+			document: appointmentsSubscription,
+			variables: {
+				locationId: location.id
+			},
+			updateQuery: (previousQueryResult, { subscriptionData }) => {
+				if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
+
+				const { appointment, employeeId, isNewRecord, deleted } = subscriptionData.data.AppointmentsChange
+
+				const isDeleted = deleted || appointment.deleted
+
+				// No need to do anything since Apollo handles updates
+				if (!isDeleted && !isNewRecord) {
+					return previousQueryResult
+				}
+
+				return produce(previousQueryResult, draftState => {
+					const indexOfEmployee = draftState.location.employees.findIndex(
+						employee => Number(employee.id) === Number(employeeId)
+					)
+
+					if (indexOfEmployee === -1) return draftState
+
+					const appointments = draftState.location.employees[indexOfEmployee].appointments
+
+					if (isDeleted) {
+						const indexOfDeletedAppointment = appointments.findIndex(appt => Number(appt.id) === Number(appointment.id))
+
+						appointments.splice(indexOfDeletedAppointment, 1)
+					} else {
+						appointments.push(appointment)
+					}
+				})
+			}
+		})
+
+		return () => {
+			unsubscribeFromSubscription()
+		}
+	}, [location.id, subscribeToMore])
+
+	if (!isAuthed) return <Auth />
+
+	if (loading) {
+		return (
+			<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+				NEVERWAIT
+			</div>
+		)
+	}
+
+	const employees = location.employees.filter(emp => emp.services.length > 0)
+
+	const handleFirstAvailableClick = id => {
+		setLastFirstAvailable(id)
+	}
+
 	return (
 		<>
 			<RefreshBtn />
 			<Switch>
-				<GuestRoute path="/auth" component={Auth} />
-				<AuthenticatedRoutes>
-					{({ location }) => {
-						return (
-							<React.Fragment>
-								<Route
-									exact
-									path="/"
-									render={props => {
-										const employees = location.employees.filter(emp => emp.services.length > 0)
-										return (
-											<MultiResourceHomeView employees={employees} location={location} company={location.company} />
-										)
-									}}
-								/>
+				<Route exact path="/">
+					<MultiResourceHomeView
+						onFirstAvailableClick={handleFirstAvailableClick}
+						employees={employees}
+						location={location}
+					/>
+				</Route>
 
-								<Route
-									path="/sign-in/:employeeId"
-									render={props => {
-										const employee = location.employees.find(emp => +emp.id === +props.match.params.employeeId)
-										return (
-											<Form
-												company={location.company}
-												locationId={location.id}
-												employeeId={employee.id}
-												services={employee.services}
-												blockedTimes={employee.blockedTimes}
-												appointments={employee.appointments}
-											/>
-										)
-									}}
-								/>
-								<Route
-									path="/finished"
-									locationId={location.id}
-									render={props => <Finished {...props} company={location.company} />}
-								/>
-							</React.Fragment>
-						)
-					}}
-				</AuthenticatedRoutes>
+				<Route path="/sign-in/:employeeId">
+					<Form company={location.company} locationId={location.id} employees={location.employees} />
+				</Route>
+
+				<Route path="/finished">
+					<Finished location={location} />
+				</Route>
 			</Switch>
 		</>
 	)
 }
 
-export default withRouter(App)
+export default App

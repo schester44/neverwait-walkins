@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Link, Redirect } from 'react-router-dom'
+import React from 'react'
+import { useHistory, Link, Redirect } from 'react-router-dom'
 import styled from 'styled-components'
 import { format } from 'date-fns'
 
@@ -89,11 +89,12 @@ const vowels = {
 	u: true
 }
 
-const Finished = ({ history, company, location: { appointment } }) => {
+const Finished = ({ location: { company, appointment } }) => {
 	console.log('[FinishedView]')
 
-	console.log(appointment, company)
-	useEffect(() => {
+	const history = useHistory()
+
+	React.useEffect(() => {
 		const timeout = window.setTimeout(() => {
 			history.push('/')
 		}, 30000)
@@ -114,7 +115,7 @@ const Finished = ({ history, company, location: { appointment } }) => {
 			<Content>
 				<div className="body">
 					<p style={{ textAlign: 'center', color: 'rgba(45, 240, 163, 1.0)' }}>Success!</p>
-					
+
 					<p style={{ textAlign: 'center' }}>
 						<span>
 							You have created
