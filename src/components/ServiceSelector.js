@@ -1,9 +1,9 @@
-import React from "react"
-import styled from "styled-components"
+import React from 'react'
+import styled from 'styled-components'
 
-import Service from "./ServiceCard"
+import Service from './ServiceCard'
 
-const Wrapper = styled("div")`
+const Wrapper = styled('div')`
 	padding-top: 50px;
 	padding: 20px 0;
 
@@ -14,16 +14,18 @@ const Wrapper = styled("div")`
 	overflow: auto;
 `
 
-const ServiceSelector = ({ selectedService, services, onSelect }) => {
+const ServiceSelector = ({ selectedServices, services, onSelect }) => {
 	return (
 		<Wrapper>
 			{services.map(service => {
+				const selected = selectedServices.includes(service.id)
+
 				return (
 					<Service
 						key={`service-${service.id}`}
 						onClick={() => onSelect(service)}
 						service={service}
-						selected={selectedService === service.id}
+						selected={selected}
 					/>
 				)
 			})}
@@ -31,6 +33,6 @@ const ServiceSelector = ({ selectedService, services, onSelect }) => {
 	)
 }
 
-const areEqual = (prevProps, nextProps) => prevProps.selectedService === nextProps.selectedService
+const areEqual = (prevProps, nextProps) => prevProps.selectedServices.length === nextProps.selectedServices.length
 
 export default React.memo(ServiceSelector, areEqual)

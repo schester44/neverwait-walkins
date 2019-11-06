@@ -1,27 +1,18 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 import Container from './Container'
 import format from 'date-fns/format'
 import addMinutes from 'date-fns/add_minutes'
 import { FiClock } from 'react-icons/fi'
+import timeFragments from './utils/timeFragments'
 
-const FirstAvailableButton = ({ waitTimes, onClick }) => {
-	const [nextAvailable, setNextAvailable] = React.useState(undefined)
-
-	const time = {}
-	const waitTime = {}
-	const isWait = false
-
-	React.useEffect(() => {
-
-		console.log(waitTimes);
-	}, [waitTimes])
+const FirstAvailableButton = ({ employeeId, waitTimes, onClick }) => {
+	const time = timeFragments(waitTimes[employeeId])
 
 	return (
 		<Container onClick={onClick} firstAvailable>
 			<div className="left">
 				<div>
-					<div className={`person ${isWait ? 'has-wait' : ''}`}>
+					<div className="person">
 						<div className="avatar">
 							<FiClock color="rgba(144, 195, 85, 1.0)" />
 						</div>
@@ -32,7 +23,7 @@ const FirstAvailableButton = ({ waitTimes, onClick }) => {
 					<div className="wait-time">
 						<div className="wait-time--title">First Available Time</div>
 						<h1 className="wait-time--highlight">
-							{format(addMinutes(new Date(), waitTime), 'h:mma')}
+							{format(addMinutes(new Date(), waitTimes[employeeId]), 'h:mma')}
 
 							{(time.hours > 0 || time.minutes > 0) && (
 								<span style={{ fontSize: 20, color: '#fff', opacity: 0.3, marginLeft: 8 }}>

@@ -1,11 +1,12 @@
-import React from "react"
-import { render } from "react-dom"
-import { ApolloProvider } from "@apollo/react-hooks"
-import { BrowserRouter as Router } from "react-router-dom"
-import client from "./graphql/createClient"
+import React from 'react'
+import { render } from 'react-dom'
+import { ApolloProvider } from '@apollo/client'
+import { BrowserRouter as Router } from 'react-router-dom'
 
-import App from "./App"
-import "./index.css"
+import { client } from './apollo-client'
+
+import App from './App'
+import './index.css'
 
 render(
 	<ApolloProvider client={client}>
@@ -13,5 +14,5 @@ render(
 			<App />
 		</Router>
 	</ApolloProvider>,
-	document.getElementById("root")
+	document.getElementById('root')
 )

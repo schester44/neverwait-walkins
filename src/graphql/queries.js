@@ -1,16 +1,34 @@
-import gql from 'graphql-tag'
+import { gql } from '@apollo/client'
 
 export const locationDataQuery = gql`
-	query LocationQuery($startTime: String!, $endTime: String!) {
+	query LocationQuery($startTime: String!, $endTime: String!, $startDate: Date!, $endDate: Date!) {
 		location {
 			company {
 				name
 			}
 			id
 			name
+			settings {
+				walkins {
+					isFirstAvailableButtonEnabled
+				}
+			}
+
 			employees(input: { where: { bookingEnabled: true } }) {
 				id
 				firstName
+
+				schedule_ranges(input: { where: { start_date: $startDate, end_date: $endDate } }) {
+					start_date
+					end_date
+					day_of_week
+					schedule_shifts {
+						start_time
+						end_time
+						acceptingWalkins
+					}
+				}
+
 				services {
 					id
 					name
@@ -28,11 +46,11 @@ export const locationDataQuery = gql`
 					startTime
 					endTime
 				}
-				blockedTimes(input: { where: { startTime: { gte: $startTime }, endTime: { lte: $endTime } } }) {
-					id
-					startTime
-					endTime
-				}
+				# blockedTimes(input: { where: { startTime: { gte: $startTime }, endTime: { lte: $endTime } } }) {
+				# 	id
+				# 	startTime
+				# 	endTime
+				# }
 			}
 		}
 	}

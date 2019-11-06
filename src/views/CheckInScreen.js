@@ -55,7 +55,7 @@ const configPlaceholder = (
 	</Config>
 )
 
-const MultiResource = ({ employees, location, onFirstAvailableClick }) => {
+const MultiResource = ({ employees, location, firstAvailableStack, setFirstAvailableStack }) => {
 	const isLorenzo = location.company.name === `Lorenzo's`
 
 	return (
@@ -67,7 +67,12 @@ const MultiResource = ({ employees, location, onFirstAvailableClick }) => {
 			{employees.length === 0 ? (
 				configPlaceholder
 			) : (
-				<EmployeeList onFirstAvailableClick={onFirstAvailableClick} employees={employees} />
+				<EmployeeList
+					isFirstAvailableButtonEnabled={location?.settings?.walkins?.isFirstAvailableButtonEnabled || false}
+					firstAvailableStack={firstAvailableStack}
+					setFirstAvailableStack={setFirstAvailableStack}
+					employees={employees}
+				/>
 			)}
 		</Wrapper>
 	)

@@ -1,12 +1,14 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { useQuery } from '@apollo/react-hooks'
+import { useQuery } from '@apollo/client'
 import { produce } from 'immer'
 import startOfDay from 'date-fns/start_of_day'
 import endOfDay from 'date-fns/end_of_day'
+import addDays from 'date-fns/add_days'
+import format from 'date-fns/format'
 
 import Auth from './views/AuthView'
-import MultiResourceHomeView from './views/CheckInScreen'
+import CheckInScreen from './views/CheckInScreen'
 import Form from './views/Form/RootContainer'
 import Finished from './views/Form/FinishedView'
 import RefreshBtn from './components/RefreshBtn'
@@ -18,11 +20,13 @@ import { appointmentsSubscription } from './graphql/subscriptions'
 const isAuthed = isAuthenticated()
 
 const App = () => {
-	const [lastFirstAvailable, setLastFirstAvailable] = React.useState(undefined)
+	const [firstAvailableStack, setFirstAvailableStack] = React.useState([])
 
 	const { data, loading, subscribeToMore } = useQuery(locationDataQuery, {
 		skip: !isAuthed,
 		variables: {
+			startDate: format(startOfDay(new Date()), 'YYYY-MM-DD'),
+			endDate: format(endOfDay(addDays(new Date(), 30)), 'YYYY-MM-DD'),
 			startTime: startOfDay(new Date()),
 			endTime: endOfDay(new Date())
 		}
@@ -85,19 +89,22 @@ const App = () => {
 		)
 	}
 
-	const employees = location.employees.filter(emp => emp.services.length > 0)
-
-	const handleFirstAvailableClick = id => {
-		setLastFirstAvailable(id)
+	// TODO: This could cause some issues
+	if (!loading && !location.employees) {
+		localStorage.removeItem('AuthToken')
+		window.location.reload()
 	}
+
+	const employees = location.employees.filter(emp => emp.services.length > 0)
 
 	return (
 		<>
 			<RefreshBtn />
 			<Switch>
 				<Route exact path="/">
-					<MultiResourceHomeView
-						onFirstAvailableClick={handleFirstAvailableClick}
+					<CheckInScreen
+						firstAvailableStack={firstAvailableStack}
+						setFirstAvailableStack={setFirstAvailableStack}
 						employees={employees}
 						location={location}
 					/>

@@ -89,10 +89,12 @@ const vowels = {
 	u: true
 }
 
-const Finished = ({ location: { company, appointment } }) => {
+const Finished = ({ location: { company } }) => {
 	console.log('[FinishedView]')
 
 	const history = useHistory()
+
+	const { appointment } = history.location.state
 
 	React.useEffect(() => {
 		const timeout = window.setTimeout(() => {

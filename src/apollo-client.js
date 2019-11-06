@@ -1,24 +1,19 @@
-import { ApolloClient } from 'apollo-client'
-import { InMemoryCache } from 'apollo-cache-inmemory'
+import { ApolloClient, HttpLink } from '@apollo/client'
 import { onError } from 'apollo-link-error'
-
-import { HttpLink } from 'apollo-link-http'
+import { InMemoryCache } from 'apollo-cache-inmemory'
 import { WebSocketLink } from 'apollo-link-ws'
 import { ApolloLink, split } from 'apollo-link'
 import { getMainDefinition } from 'apollo-utilities'
-import { AUTH_TOKEN_KEY } from '../constants'
-import config from '../config'
+import { AUTH_TOKEN_KEY } from './constants'
+import config from './config'
 
-const onErrorLink = onError(({ graphQLErrors, networkError, response }) => {
+const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	if (networkError && networkError.result && networkError.result.errors) {
-		networkError.result.errors.forEach(error => {
-			console.log(error)
-		})
+		networkError.result.errors.forEach(console.log)
 	}
 
 	if (graphQLErrors) {
 		graphQLErrors.forEach(error => {
-
 			// Only remove the token adn refresh the screen back to the auth screen if we're not already on the auth screen
 			if (
 				error.name === 'AuthenticationError' &&
@@ -97,6 +92,5 @@ const link = split(
 )
 
 const cache = new InMemoryCache()
-const client = new ApolloClient({ link, cache })
 
-export default client
+export const client = new ApolloClient({ link, cache })
