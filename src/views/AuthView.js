@@ -74,6 +74,7 @@ const AuthView = ({ client }) => {
 				placeholder="Auth Code"
 				type="text"
 				name="code"
+				autocapitalize="none"
 				value={code}
 				onChange={({ target: { value } }) => setState(prevState => ({ ...prevState, code: value }))}
 			/>
