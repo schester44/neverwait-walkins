@@ -160,10 +160,9 @@ const RootContainer = ({
 
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
 		const duration = appointment.services.reduce((acc, id) => {
-			console.log(state.services, id)
 			const service = state.services[id]
-			console.log(service)
-			return acc + service ? service.sources[0].duration : 0
+
+			return acc + parseInt(service ? service.sources[0].duration : 0)
 		}, 0)
 
 		try {
