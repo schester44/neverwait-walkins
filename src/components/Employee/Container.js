@@ -1,4 +1,19 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
+
+const firstAvailableStyles = ({ firstAvailable }) =>
+	firstAvailable &&
+	css`
+		background: rgba(47, 53, 60, 1);
+
+		.wait-time--highlight {
+			color: rgba(144, 195, 85, 1.0);
+		}
+
+		button {
+			background: rgba(144, 195, 85, 1.0);
+			color: white;
+		}
+	`
 
 export default styled('div')`
 	margin-bottom: 24px;
@@ -46,6 +61,12 @@ export default styled('div')`
 			color: rgba(237, 209, 129, 1);
 			font-size: 40px;
 		}
+
+		&.first-available {
+			&--highlight {
+				font-size: 28px;
+			}
+		}
 	}
 
 	.person {
@@ -69,4 +90,6 @@ export default styled('div')`
 		color: black;
 		box-shadow: 2px 3px 3px rgba(32, 32, 32, 0.3);
 	}
+
+	${firstAvailableStyles};
 `

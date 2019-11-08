@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { withRouter, Link } from 'react-router-dom'
-import { withApollo } from 'react-apollo'
+import { useHistory, useParams, Link } from 'react-router-dom'
+import { useMutation, useLazyQuery } from '@apollo/client'
+
+import { produce } from 'immer'
 import { FiArrowLeft } from 'react-icons/fi'
+
 import format from 'date-fns/format'
 import addMinutes from 'date-fns/add_minutes'
 
-import { searchCustomers } from '../../graphql/queries'
+import { searchCustomers as searchCustomersQuery } from '../../graphql/queries'
 import { findOrCreateCustomerMutation, upsertAppointmentMutation } from '../../graphql/mutations'
+
 import getLastAppointment from './utils/getLastAppointment'
 import determineStartTime from './utils/determineStartTime'
 
@@ -87,124 +91,120 @@ const ActiveCustomer = styled('div')`
 	padding-bottom: 25px;
 `
 
-const RootContainer = ({
-	client,
-	history,
-	company,
-	appointments = [],
-	blockedTimes = [],
-	employeeId,
-	locationId,
-	services = []
-}) => {
-	console.log('[RootContainer]')
+const RootContainer = ({ company, employees, locationId }) => {
+	const { employeeId } = useParams()
+	console.log('[Form RootContainer]')
 
-	const [appointment, setAppointment] = useState({ userId: employeeId, locationId, services: [] })
-	const [customer, setCustomer] = useState({ firstName: '', lastName: '', phoneNumber: '' })
-	const [activeCustomer, setActiveCustomer] = useState(undefined)
+	const [findOrCreateCustomer, { loading: customerLoading }] = useMutation(findOrCreateCustomerMutation)
+	const [upsertAppointment, { loading: upsertLoading }] = useMutation(upsertAppointmentMutation)
+
+	const [searchCustomers, { data: { searchCustomers: customerSearchResults = [] } = {} }] = useLazyQuery(
+		searchCustomersQuery
+	)
+
+	const employee = employees.find(emp => Number(emp.id) === Number(employeeId))
+	const history = useHistory()
+
+	const services = employee.services || []
+	const blockedTimes = employee.blockedTimes || []
+	const appointments = employee.appointments || []
 
 	const [state, setState] = useState({
-		isSubmitting: false,
+		customer: {
+			firstName: '',
+			lastName: '',
+			phoneNumber: ''
+		},
+		appointment: {
+			userId: employeeId,
+			locationId,
+			services: []
+		},
 		services: services.reduce((acc, service) => {
 			acc[service.id] = service
 			return acc
-		}, {}),
-		selectedService: undefined
+		}, {})
 	})
 
-	useEffect(() => {
-		if (!customer.phoneNumber || customer.phoneNumber.length < 10) {
-			if (activeCustomer) {
-				setActiveCustomer(undefined)
-			}
+	const activeCustomer = state.customer.phoneNumber.length === 10 ? customerSearchResults[0] : undefined
 
-			return
-		}
-
-		client
-			.query({
-				query: searchCustomers,
-				variables: {
-					input: {
-						term: customer.phoneNumber
-					}
-				}
-			})
-			.then(({ data: { searchCustomers } }) => {
-				if (searchCustomers && searchCustomers.length > 0) {
-					let activeCustomer = searchCustomers[searchCustomers.length - 1]
-					setActiveCustomer(activeCustomer)
-
-					if (activeCustomer.appointments.past.length > 0) {
-						const service = activeCustomer.appointments.past[0].services[0]
-
-						if (service) {
-							setState(prevState => ({ ...prevState, selectedService: service.id }))
-							setAppointment(prevState => ({ ...prevState, services: [service.id] }))
-						}
-					}
+	React.useEffect(() => {
+		setState(prevState => {
+			return produce(prevState, draftState => {
+				if (!activeCustomer) {
+					draftState.appointment.services = []
 				} else {
-					setActiveCustomer(undefined)
+					const service = activeCustomer.appointments?.past?.[0]?.services?.[0]
 
-					if (state.selectedService) {
-						setState(prevState => ({ ...prevState, selectedService: undefined }))
+					if (service && !prevState.appointment.services.includes(service.id)) {
+						draftState.appointment.services.push(service.id)
 					}
 				}
 			})
-	}, [customer.phoneNumber, client])
+		})
+	}, [activeCustomer])
 
-	const btnDisabled = customer.phoneNumber.length < 10 || !state.selectedService || state.isSubmitting
+	useEffect(() => {
+		if (state.customer.phoneNumber.length < 10) return
+
+		searchCustomers({
+			variables: {
+				input: {
+					term: state.customer.phoneNumber
+				}
+			}
+		})
+	}, [searchCustomers, state.customer])
 
 	const handleSubmit = async () => {
-		setState(prevState => ({ ...prevState, isSubmitting: true }))
-
 		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
-		const duration = appointment.services.reduce((acc, id) => {
+		const duration = state.appointment.services.reduce((acc, id) => {
 			const service = state.services[id]
-
 			return acc + parseInt(service ? service.sources[0].duration : 0)
 		}, 0)
 
-		try {
-			let customerId = (activeCustomer || {}).id
+		let customerId = (activeCustomer || {}).id
 
-			if (!customerId) {
-				const {
-					data: { findOrCreateCustomer }
-				} = await client.mutate({
-					mutation: findOrCreateCustomerMutation,
-					variables: {
-						input: { ...customer, acceptsMarketing: 1, appointmentNotifications: 'sms' }
-					}
-				})
-
-				customerId = findOrCreateCustomer.id
-			}
-
-			const lastAppt = getLastAppointment([...appointments, ...blockedTimes], duration)
-			const startTime = determineStartTime(lastAppt)
-			const endTime = format(addMinutes(startTime, duration))
-
-			const {
-				data: { upsertAppointment }
-			} = await client.mutate({
-				mutation: upsertAppointmentMutation,
+		if (!customerId) {
+			const { data } = await findOrCreateCustomer({
 				variables: {
-					input: {
-						...appointment,
-						startTime,
-						endTime,
-						customerId
-					}
+					input: { ...state.customer, acceptsMarketing: 1, appointmentNotifications: 'sms' }
 				}
 			})
 
-			// show the Finished route and pass the appointment as route state so we can show the estimated start time
-			history.push({ pathname: '/finished', appointment: upsertAppointment })
-		} catch (error) {
-			setState(prevState => ({ ...prevState, isSubmitting: false }))
+			customerId = data?.findOrCreateCustomer?.id
 		}
+
+		const lastAppt = getLastAppointment([...appointments, ...blockedTimes], duration)
+		const startTime = determineStartTime(lastAppt)
+		const endTime = format(addMinutes(startTime, duration))
+
+		const { data } = await upsertAppointment({
+			mutation: upsertAppointmentMutation,
+			variables: {
+				input: {
+					...state.appointment,
+					startTime,
+					endTime,
+					customerId
+				}
+			}
+		})
+
+		// show the Finished route and pass the appointment as route state so we can show the estimated start time
+		history.push({ pathname: '/finished', state: { appointment: data.upsertAppointment } })
 	}
+
+	const btnDisabled =
+		// need a valid phone number
+		state.customer.phoneNumber.length < 10 ||
+		// require a name if there isn't a found customer
+		(!activeCustomer && state.customer.firstName.length === 0) ||
+		// need services
+		state.appointment.services.length === 0 ||
+		// load states
+		customerLoading ||
+		upsertLoading
 
 	return (
 		<Wrapper>
@@ -223,9 +223,15 @@ const RootContainer = ({
 						type="number"
 						pattern="\d*"
 						name="phoneNumber"
-						value={customer.phoneNumber}
+						value={state.customer.phoneNumber}
 						onChange={({ target: { value } }) => {
-							setCustomer(prevState => ({ ...prevState, phoneNumber: value }))
+							setState(prevState =>
+								produce(prevState, draftState => {
+									if (value.length <= 10) {
+										draftState.customer.phoneNumber = value
+									}
+								})
+							)
 						}}
 					/>
 				</div>
@@ -237,16 +243,28 @@ const RootContainer = ({
 							type="text"
 							name="firstName"
 							style={{ marginRight: 10 }}
-							value={customer.firstName}
-							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, firstName: value }))}
+							value={state.customer.firstName}
+							onChange={({ target: { value } }) => {
+								setState(prevState =>
+									produce(prevState, draftState => {
+										draftState.customer.firstName = value
+									})
+								)
+							}}
 						/>
 
 						<Input
 							placeholder="Last Name"
 							type="text"
 							name="lastName"
-							value={customer.lastName}
-							onChange={({ target: { value } }) => setCustomer(prevState => ({ ...prevState, lastName: value }))}
+							value={state.customer.lastName}
+							onChange={({ target: { value } }) => {
+								setState(prevState =>
+									produce(prevState, draftState => {
+										draftState.customer.lastName = value
+									})
+								)
+							}}
 						/>
 					</div>
 				)}
@@ -255,21 +273,32 @@ const RootContainer = ({
 
 				<ServiceSelector
 					services={services}
-					selectedService={state.selectedService}
+					selectedServices={state.appointment.services}
 					onSelect={({ id }) => {
-						setState(prevState => ({ ...prevState, selectedService: id }))
-						setAppointment({ ...appointment, services: [id] })
+						setState(prevState => {
+							return produce(prevState, draftState => {
+								const indexOfExisting = prevState.appointment.services.findIndex(cid => Number(cid) === Number(id))
+
+								console.log(indexOfExisting)
+
+								if (indexOfExisting >= 0) {
+									draftState.appointment.services.splice(indexOfExisting, 1)
+								} else {
+									draftState.appointment.services.push(id)
+								}
+							})
+						})
 					}}
 				/>
 
 				<div className="button">
 					<Button onClick={handleSubmit} disabled={btnDisabled}>
 						{btnDisabled
-							? state.isSubmitting
+							? upsertLoading
 								? 'Submitting'
-								: customer.phoneNumber.length < 10
+								: state.customer.phoneNumber.length < 10
 								? 'Enter valid phone number'
-								: !state.selectedService
+								: state.appointment.services.length === 0
 								? 'Select a service'
 								: 'Form incomplete'
 							: 'Check In'}
@@ -280,4 +309,4 @@ const RootContainer = ({
 	)
 }
 
-export default withRouter(withApollo(RootContainer))
+export default RootContainer
