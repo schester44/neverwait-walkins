@@ -18,9 +18,9 @@ export const findOrCreateCustomerMutation = gql`
 	}
 `
 
-export const upsertAppointmentMutation = gql`
-	mutation upsert($input: AppointmentInput!) {
-		upsertAppointment(sourceType: walkin, input: $input) {
+export const createWalkinAppointmentMutation = gql`
+	mutation createAppointment($input: CreateWalkinAppointmentInput!) {
+		createWalkinAppointment(input: $input) {
 			id
 			startTime
 			endTime

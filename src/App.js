@@ -1,5 +1,5 @@
 import React from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, useLocation } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import { produce } from 'immer'
 import startOfDay from 'date-fns/start_of_day'
@@ -20,13 +20,29 @@ const isAuthed = isAuthenticated()
 const App = () => {
 	const [firstAvailableStack, setFirstAvailableStack] = React.useState([])
 
-	const { data, loading, subscribeToMore } = useQuery(locationDataQuery, {
+	const routeLocation = useLocation()
+
+	const variables = {
+		startTime: startOfDay(new Date()),
+		endTime: endOfDay(new Date())
+	}
+
+	const { data, loading, subscribeToMore, refetch } = useQuery(locationDataQuery, {
 		skip: !isAuthed,
-		variables: {
-			startTime: startOfDay(new Date()),
-			endTime: endOfDay(new Date())
-		}
+		variables
 	})
+
+	React.useEffect(() => {
+		// only refresh after 10 minutes when on the home screen.
+		// this should help mitigate issues of incorrect barbers being shown, etc.
+		if (routeLocation.pathname !== '/') return
+
+		const refreshTimer = window.setInterval(() => refetch({ variables }), 1000 * 5)
+
+		return () => {
+			return window.clearInterval(refreshTimer)
+		}
+	}, [routeLocation, variables, refetch])
 
 	const location = data ? data.location : {}
 

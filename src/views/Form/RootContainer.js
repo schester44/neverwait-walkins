@@ -6,14 +6,8 @@ import { useMutation, useLazyQuery } from '@apollo/client'
 import { produce } from 'immer'
 import { FiArrowLeft } from 'react-icons/fi'
 
-import format from 'date-fns/format'
-import addMinutes from 'date-fns/add_minutes'
-
 import { searchCustomers as searchCustomersQuery } from '../../graphql/queries'
-import { findOrCreateCustomerMutation, upsertAppointmentMutation } from '../../graphql/mutations'
-
-import getLastAppointment from './utils/getLastAppointment'
-import determineStartTime from './utils/determineStartTime'
+import { findOrCreateCustomerMutation, createWalkinAppointmentMutation } from '../../graphql/mutations'
 
 import ServiceSelector from '../../components/ServiceSelector'
 import Input from '../../components/Input'
@@ -96,7 +90,7 @@ const RootContainer = ({ company, employees, locationId }) => {
 	console.log('[Form RootContainer]')
 
 	const [findOrCreateCustomer, { loading: customerLoading }] = useMutation(findOrCreateCustomerMutation)
-	const [upsertAppointment, { loading: upsertLoading }] = useMutation(upsertAppointmentMutation)
+	const [createAppointment, { loading: upsertLoading }] = useMutation(createWalkinAppointmentMutation)
 
 	const [searchCustomers, { data: { searchCustomers: customerSearchResults = [] } = {} }] = useLazyQuery(
 		searchCustomersQuery
@@ -106,8 +100,6 @@ const RootContainer = ({ company, employees, locationId }) => {
 	const history = useHistory()
 
 	const services = employee.services || []
-	const blockedTimes = employee.blockedTimes || []
-	const appointments = employee.appointments || []
 
 	const [state, setState] = useState({
 		customer: {
@@ -132,8 +124,10 @@ const RootContainer = ({ company, employees, locationId }) => {
 		setState(prevState => {
 			return produce(prevState, draftState => {
 				if (!activeCustomer) {
+					// if the activecustomer changes and there isn't one then reset the services
 					draftState.appointment.services = []
 				} else {
+					// get the customers last service and add it to the services array.
 					const service = activeCustomer.appointments?.past?.[0]?.services?.[0]
 
 					if (service && !prevState.appointment.services.includes(service.id)) {
@@ -157,12 +151,6 @@ const RootContainer = ({ company, employees, locationId }) => {
 	}, [searchCustomers, state.customer])
 
 	const handleSubmit = async () => {
-		// Add up all service durations. We'll use this to calculate the endTime (startTime + duration = endTime)
-		const duration = state.appointment.services.reduce((acc, id) => {
-			const service = state.services[id]
-			return acc + parseInt(service ? service.sources[0].duration : 0)
-		}, 0)
-
 		let customerId = (activeCustomer || {}).id
 
 		if (!customerId) {
@@ -175,17 +163,11 @@ const RootContainer = ({ company, employees, locationId }) => {
 			customerId = data?.findOrCreateCustomer?.id
 		}
 
-		const lastAppt = getLastAppointment([...appointments, ...blockedTimes], duration)
-		const startTime = determineStartTime(lastAppt)
-		const endTime = format(addMinutes(startTime, duration))
-
-		const { data } = await upsertAppointment({
-			mutation: upsertAppointmentMutation,
+		const { data } = await createAppointment({
+			mutation: createWalkinAppointmentMutation,
 			variables: {
 				input: {
 					...state.appointment,
-					startTime,
-					endTime,
 					customerId
 				}
 			}
