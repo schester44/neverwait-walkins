@@ -18,7 +18,6 @@ const Wrapper = styled("div")`
 
 	.input-wrapper {
 		width: 100%;
-		padding-top: 25px;
 	}
 
 	input {

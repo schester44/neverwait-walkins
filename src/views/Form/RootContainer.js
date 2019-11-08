@@ -19,6 +19,17 @@ const Wrapper = styled('div')`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	overflow: hidden;
+
+	.action-button {
+		position: fixed;
+		background: rgba(25, 30, 33, 1);
+		left: 0;
+		width: 100%;
+		bottom: 0;
+		z-index: 99999;
+		padding: 20px;
+	}
 `
 
 const Content = styled('div')`
@@ -27,14 +38,7 @@ const Content = styled('div')`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	padding-top: 25px;
-
-	.button {
-		position: absolute;
-		bottom: 25px;
-		left: 0;
-		width: 100%;
-	}
+	padding-top: 15px;
 
 	h1 {
 		font-weight: 100;
@@ -251,7 +255,7 @@ const RootContainer = ({ company, employees, locationId }) => {
 					</div>
 				)}
 				{activeCustomer && <ActiveCustomer>Welcome back, {activeCustomer.firstName}!</ActiveCustomer>}
-				<h1 style={{ marginTop: 35 }}>2. SELECT A SERVICE</h1>
+				<h1 style={{ marginTop: 15, marginBottom: 15 }}>2. SELECT A SERVICE</h1>
 
 				<ServiceSelector
 					services={services}
@@ -272,21 +276,21 @@ const RootContainer = ({ company, employees, locationId }) => {
 						})
 					}}
 				/>
-
-				<div className="button">
-					<Button onClick={handleSubmit} disabled={btnDisabled}>
-						{btnDisabled
-							? upsertLoading
-								? 'Submitting'
-								: state.customer.phoneNumber.length < 10
-								? 'Enter valid phone number'
-								: state.appointment.services.length === 0
-								? 'Select a service'
-								: 'Form incomplete'
-							: 'Check In'}
-					</Button>
-				</div>
 			</Content>
+
+			<div className="action-button">
+				<Button style={{ margin: 0 }} onClick={handleSubmit} disabled={btnDisabled}>
+					{btnDisabled
+						? upsertLoading
+							? 'Submitting'
+							: state.customer.phoneNumber.length < 10
+							? 'Enter valid phone number'
+							: state.appointment.services.length === 0
+							? 'Select a service'
+							: 'Form incomplete'
+						: 'Check In'}
+				</Button>
+			</div>
 		</Wrapper>
 	)
 }

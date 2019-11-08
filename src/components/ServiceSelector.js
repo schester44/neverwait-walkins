@@ -4,14 +4,13 @@ import styled from 'styled-components'
 import Service from './ServiceCard'
 
 const Wrapper = styled('div')`
-	padding-top: 50px;
-	padding: 20px 0;
-
 	display: flex;
 	flex-wrap: wrap;
 	flex: 1;
-	max-height: 42%;
+	max-height: 59vh;
 	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+	padding-bottom: 150px;
 `
 
 const ServiceSelector = ({ selectedServices, services, onSelect }) => {
