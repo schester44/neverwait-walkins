@@ -32,7 +32,7 @@ export const locationDataQuery = gql`
 				services {
 					id
 					name
-					sources(input: { where: { type: "default" } }) {
+					sources(input: { where: { type: default } }) {
 						price
 						duration
 					}
