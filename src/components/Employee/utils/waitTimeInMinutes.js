@@ -1,12 +1,12 @@
-import { isBefore, differenceInMinutes, addMinutes, isAfter } from "date-fns"
+import { isBefore, differenceInMinutes, addMinutes, isAfter } from 'date-fns'
 
 export default (appointments = [], blockedTimes = []) => {
 	let index = undefined
 	const now = new Date()
-	console.log("calculating wait time in minutes")
+	console.log('calculating wait time in minutes')
 
 	const sortedAppointments = [...appointments, ...blockedTimes]
-		.filter(({ status, endTime }) => status !== "completed" && status !== "deleted" && isAfter(endTime, now))
+		.filter(({ status, endTime }) => status === 'confirmed' && isAfter(endTime, now))
 		.sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
 
 	for (let i = 0; i < sortedAppointments.length; i++) {

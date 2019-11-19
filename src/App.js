@@ -55,11 +55,13 @@ const App = () => {
 				locationId: location.id
 			},
 			updateQuery: (previousQueryResult, { subscriptionData }) => {
-				if (!subscriptionData.data || !subscriptionData.data.AppointmentsChange) return
+				if (!subscriptionData.data.AppointmentsChange?.appointment) {
+					return
+				}
 
-				const { appointment, employeeId, isNewRecord, deleted } = subscriptionData.data.AppointmentsChange
+        const { appointment, employeeId, isNewRecord } = subscriptionData.data.AppointmentsChange
 
-				const isDeleted = deleted || appointment.deleted
+				const isDeleted = appointment.status === 'deleted'
 
 				// No need to do anything since Apollo handles updates
 				if (!isDeleted && !isNewRecord) {
@@ -76,7 +78,9 @@ const App = () => {
 					const appointments = draftState.location.employees[indexOfEmployee].appointments
 
 					if (isDeleted) {
-						const indexOfDeletedAppointment = appointments.findIndex(appt => Number(appt.id) === Number(appointment.id))
+						const indexOfDeletedAppointment = appointments.findIndex(
+							appt => Number(appt.id) === Number(appointment.id)
+						)
 
 						appointments.splice(indexOfDeletedAppointment, 1)
 					} else {
@@ -95,7 +99,15 @@ const App = () => {
 
 	if (loading) {
 		return (
-			<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+			<div
+				style={{
+					width: '100%',
+					height: '100%',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center'
+				}}
+			>
 				NEVERWAIT
 			</div>
 		)
@@ -123,7 +135,11 @@ const App = () => {
 				</Route>
 
 				<Route path="/sign-in/:employeeId">
-					<Form company={location.company} locationId={location.id} employees={location.employees} />
+					<Form
+						company={location.company}
+						locationId={location.id}
+						employees={location.employees}
+					/>
 				</Route>
 
 				<Route path="/finished">
