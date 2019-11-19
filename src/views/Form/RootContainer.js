@@ -178,7 +178,7 @@ const RootContainer = ({ company, employees, locationId }) => {
 		})
 
 		// show the Finished route and pass the appointment as route state so we can show the estimated start time
-		history.push({ pathname: '/finished', state: { appointment: data.upsertAppointment } })
+		history.push({ pathname: '/finished', state: { appointment: data.createWalkinAppointment } })
 	}
 
 	const btnDisabled =
