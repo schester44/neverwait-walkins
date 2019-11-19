@@ -160,7 +160,7 @@ const RootContainer = ({ company, employees, locationId }) => {
 		if (!customerId) {
 			const { data } = await findOrCreateCustomer({
 				variables: {
-					input: { ...state.customer, acceptsMarketing: 1, appointmentNotifications: 'sms' }
+					input: { ...state.customer, acceptsMarketing: true, appointmentNotifications: 'sms' }
 				}
 			})
 
