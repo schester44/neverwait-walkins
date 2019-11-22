@@ -7,7 +7,10 @@ import { produce } from 'immer'
 import { FiArrowLeft } from 'react-icons/fi'
 
 import { searchCustomers as searchCustomersQuery } from '../../graphql/queries'
-import { findOrCreateCustomerMutation, createWalkinAppointmentMutation } from '../../graphql/mutations'
+import {
+	findOrCreateCustomerMutation,
+	createWalkinAppointmentMutation
+} from '../../graphql/mutations'
 
 import ServiceSelector from '../../components/ServiceSelector'
 import Input from '../../components/Input'
@@ -93,12 +96,17 @@ const RootContainer = ({ company, employees, locationId }) => {
 	const { employeeId } = useParams()
 	console.log('[Form RootContainer]')
 
-	const [findOrCreateCustomer, { loading: customerLoading }] = useMutation(findOrCreateCustomerMutation)
-	const [createAppointment, { loading: upsertLoading }] = useMutation(createWalkinAppointmentMutation)
-
-	const [searchCustomers, { data: { searchCustomers: customerSearchResults = [] } = {} }] = useLazyQuery(
-		searchCustomersQuery
+	const [findOrCreateCustomer, { loading: customerLoading }] = useMutation(
+		findOrCreateCustomerMutation
 	)
+	const [createAppointment, { loading: upsertLoading }] = useMutation(
+		createWalkinAppointmentMutation
+	)
+
+	const [
+		searchCustomers,
+		{ data: { searchCustomers: customerSearchResults = [] } = {} }
+	] = useLazyQuery(searchCustomersQuery)
 
 	const employee = employees.find(emp => Number(emp.id) === Number(employeeId))
 	const history = useHistory()
@@ -122,7 +130,8 @@ const RootContainer = ({ company, employees, locationId }) => {
 		}, {})
 	})
 
-	const activeCustomer = state.customer.phoneNumber.length === 10 ? customerSearchResults[0] : undefined
+	const activeCustomer =
+		state.customer.phoneNumber.length === 10 ? customerSearchResults[0] : undefined
 
 	React.useEffect(() => {
 		setState(prevState => {
@@ -130,13 +139,6 @@ const RootContainer = ({ company, employees, locationId }) => {
 				if (!activeCustomer) {
 					// if the activecustomer changes and there isn't one then reset the services
 					draftState.appointment.services = []
-				} else {
-					// get the customers last service and add it to the services array.
-					const service = activeCustomer.appointments?.past?.[0]?.services?.[0]
-
-					if (service && !prevState.appointment.services.includes(service.id)) {
-						draftState.appointment.services.push(service.id)
-					}
 				}
 			})
 		})
@@ -254,7 +256,9 @@ const RootContainer = ({ company, employees, locationId }) => {
 						/>
 					</div>
 				)}
-				{activeCustomer && <ActiveCustomer>Welcome back, {activeCustomer.firstName}!</ActiveCustomer>}
+				{activeCustomer && (
+					<ActiveCustomer>Welcome back, {activeCustomer.firstName}!</ActiveCustomer>
+				)}
 				<h1 style={{ marginTop: 15, marginBottom: 15 }}>2. SELECT A SERVICE</h1>
 
 				<ServiceSelector
@@ -263,7 +267,9 @@ const RootContainer = ({ company, employees, locationId }) => {
 					onSelect={({ id }) => {
 						setState(prevState => {
 							return produce(prevState, draftState => {
-								const indexOfExisting = prevState.appointment.services.findIndex(cid => Number(cid) === Number(id))
+								const indexOfExisting = prevState.appointment.services.findIndex(
+									cid => Number(cid) === Number(id)
+								)
 
 								console.log(indexOfExisting)
 
