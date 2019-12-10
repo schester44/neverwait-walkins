@@ -21,6 +21,17 @@ const Wrapper = styled('div')`
 		font-family: Domus, sans-serif;
 		font-size: 44px;
 		padding-top: 80px;
+		display: flex;
+		align-items: center;
+
+		h1 {
+			font-size: 1em;
+		}
+
+		img {
+			max-width: 60px;
+			margin-right: 16px;
+		}
 	}
 
 	.form {
@@ -69,7 +80,10 @@ const AuthView = () => {
 
 	return (
 		<Wrapper>
-			<h1 className="header">NEVERWAIT</h1>
+			<div className="header">
+				<img src="images/logo.png" />
+				<h1>NEVERWAIT</h1>
+			</div>
 
 			<div className="form">
 				{errors.length > 0 && (
@@ -84,9 +98,11 @@ const AuthView = () => {
 					placeholder="Auth Code"
 					type="text"
 					name="code"
-					autocapitalize="none"
+					autoCapitalize="none"
 					value={code}
-					onChange={({ target: { value } }) => setState(prevState => ({ ...prevState, code: value }))}
+					onChange={({ target: { value } }) =>
+						setState(prevState => ({ ...prevState, code: value }))
+					}
 				/>
 
 				<div className="action">
