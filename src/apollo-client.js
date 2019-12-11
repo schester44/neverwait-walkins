@@ -68,8 +68,7 @@ export const wsLink = new WebSocketLink({
 		reconnect: true,
 		lazy: true,
 		connectionParams: {
-			token:
-				console.log('subscription token:', localStorage.getItem(AUTH_TOKEN_KEY)) || localStorage.getItem(AUTH_TOKEN_KEY)
+			token: localStorage.getItem(AUTH_TOKEN_KEY)
 		}
 	}
 })

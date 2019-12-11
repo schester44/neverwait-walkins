@@ -1,5 +1,5 @@
 import React from 'react'
-import { Switch, Route, useLocation } from 'react-router-dom'
+import { Switch, Route, useLocation, Redirect } from 'react-router-dom'
 import { useQuery } from '@apollo/client'
 import { produce } from 'immer'
 import startOfDay from 'date-fns/start_of_day'
@@ -37,6 +37,8 @@ const App = () => {
 		// this should help mitigate issues of incorrect barbers being shown, etc.
 		if (routeLocation.pathname !== '/') return
 
+		// TODO: Still need a mechanism to refresh the entire page for when there are code changes.
+
 		const refreshTimer = window.setInterval(() => refetch({ variables }), 1000 * 5)
 
 		return () => {
@@ -59,7 +61,7 @@ const App = () => {
 					return
 				}
 
-        const { appointment, employeeId, isNewRecord } = subscriptionData.data.AppointmentsChange
+				const { appointment, employeeId, isNewRecord } = subscriptionData.data.AppointmentsChange
 
 				const isDeleted = appointment.status === 'deleted'
 
@@ -95,7 +97,15 @@ const App = () => {
 		}
 	}, [location.id, subscribeToMore])
 
-	if (!isAuthed) return <Auth />
+	if (!isAuthed)
+		return (
+			<Switch>
+				<Route path="/auth">
+					<Auth />
+				</Route>
+				<Redirect to="/auth" />
+			</Switch>
+		)
 
 	if (loading) {
 		return (
