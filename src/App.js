@@ -155,6 +155,8 @@ const App = () => {
 				<Route path="/finished">
 					<Finished location={location} />
 				</Route>
+				
+				<Redirect to="/" />
 			</Switch>
 		</>
 	)
