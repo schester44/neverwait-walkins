@@ -26,7 +26,7 @@ const App = () => {
 		endTime: endOfDay(new Date())
 	}
 
-	const { data, loading, subscribeToMore, refetch } = useQuery(locationDataQuery, {
+	const { data, loading, called, subscribeToMore, refetch } = useQuery(locationDataQuery, {
 		skip: !isAuthed,
 		variables
 	})
@@ -95,7 +95,7 @@ const App = () => {
 		}
 	}, [location.id, subscribeToMore])
 
-	if (!isAuthed) {
+	if (!isAuthed || (called && !loading && !data?.location)) {
 		return (
 			<Switch>
 				<Route path="/auth">
@@ -120,12 +120,6 @@ const App = () => {
 				NEVERWAIT
 			</div>
 		)
-	}
-
-	// TODO: This could cause some issues
-	if (!loading && !location.employees) {
-		localStorage.removeItem('AuthToken')
-		window.location.reload()
 	}
 
 	const employees = location.employees.filter(emp => emp.services.length > 0)

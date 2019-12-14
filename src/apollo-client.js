@@ -19,7 +19,7 @@ const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 				localStorage.removeItem('nw-walkin-sess')
 
 				if (window.location.pathname !== '/auth') {
-					window.location.reload()
+					window.location.href = '/auth'
 				}
 			}
 		})
