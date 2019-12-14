@@ -12,12 +12,11 @@ import Finished from './views/Form/FinishedView'
 import RefreshBtn from './components/RefreshBtn'
 
 import { locationDataQuery } from './graphql/queries'
-import { isAuthenticated } from './graphql/utils'
 import { appointmentsSubscription } from './graphql/subscriptions'
 
-const isAuthed = isAuthenticated()
-
 const App = () => {
+	const isAuthed = !!localStorage.getItem('nw-walkin-sess')
+
 	const [firstAvailableStack, setFirstAvailableStack] = React.useState([])
 
 	const routeLocation = useLocation()
@@ -38,8 +37,7 @@ const App = () => {
 		if (routeLocation.pathname !== '/') return
 
 		// TODO: Still need a mechanism to refresh the entire page for when there are code changes.
-
-		const refreshTimer = window.setInterval(() => refetch({ variables }), 1000 * 5)
+		const refreshTimer = window.setInterval(() => refetch({ variables }), 1000 * 5 * 60)
 
 		return () => {
 			return window.clearInterval(refreshTimer)
@@ -49,7 +47,7 @@ const App = () => {
 	const location = data ? data.location : {}
 
 	React.useEffect(() => {
-		if (!isAuthed || !location.id) return
+		if (!location.id) return
 
 		const unsubscribeFromSubscription = subscribeToMore({
 			document: appointmentsSubscription,
@@ -97,7 +95,7 @@ const App = () => {
 		}
 	}, [location.id, subscribeToMore])
 
-	if (!isAuthed)
+	if (!isAuthed) {
 		return (
 			<Switch>
 				<Route path="/auth">
@@ -106,6 +104,7 @@ const App = () => {
 				<Redirect to="/auth" />
 			</Switch>
 		)
+	}
 
 	if (loading) {
 		return (
@@ -155,7 +154,7 @@ const App = () => {
 				<Route path="/finished">
 					<Finished location={location} />
 				</Route>
-				
+
 				<Redirect to="/" />
 			</Switch>
 		</>

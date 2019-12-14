@@ -2,9 +2,7 @@ import { gql } from '@apollo/client'
 
 export const authWithToken = gql`
 	mutation authWithToken($key: String!) {
-		authWithToken(key: $key) {
-			token
-		}
+		authWithToken(key: $key)
 	}
 `
 

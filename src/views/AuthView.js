@@ -6,7 +6,6 @@ import { authWithToken } from '../graphql/mutations'
 
 import Input from '../components/Input'
 import Button from '../components/Button'
-import { AUTH_TOKEN_KEY } from '../constants'
 
 const Wrapper = styled('div')`
 	height: 60vh;
@@ -67,11 +66,12 @@ const AuthView = () => {
 
 	const handleSubmit = async () => {
 		try {
-			const { data } = await auth({
+			await auth({
 				variables: { key: code }
 			})
 
-			localStorage.setItem(AUTH_TOKEN_KEY, data.authWithToken.token)
+			localStorage.setItem('nw-walkin-sess', true)
+
 			window.location.reload()
 		} catch (error) {
 			setState(prevState => ({ ...prevState, errors: error.graphQLErrors || [] }))
@@ -81,7 +81,7 @@ const AuthView = () => {
 	return (
 		<Wrapper>
 			<div className="header">
-				<img src="images/logo.png" />
+				<img src="images/logo.png" alt="NeverWait" />
 				<h1>NEVERWAIT</h1>
 			</div>
 
