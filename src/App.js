@@ -61,7 +61,10 @@ const App = () => {
 
 				const { appointment, employeeId, isNewRecord } = subscriptionData.data.AppointmentsChange
 
-				const isDeleted = appointment.status === 'deleted'
+				const isDeleted =
+					appointment.status === 'deleted' ||
+					appointment.status === 'canceled' ||
+					appointment.status === 'noshow'
 
 				// No need to do anything since Apollo handles updates
 				if (!isDeleted && !isNewRecord) {
