@@ -124,10 +124,8 @@ const RootContainer = ({ company, employees, locationId }) => {
 			locationId,
 			services: []
 		},
-		services: services.reduce((acc, service) => {
-			acc[service.id] = service
-			return acc
-		}, {})
+		selectedServicesCount: {},
+		selectedServiceIds: {}
 	})
 
 	const activeCustomer =
@@ -139,6 +137,8 @@ const RootContainer = ({ company, employees, locationId }) => {
 				if (!activeCustomer) {
 					// if the activecustomer changes and there isn't one then reset the services
 					draftState.appointment.services = []
+					draftState.selectedServiceIds = {}
+					draftState.selectedServicesCount = {}
 				}
 			})
 		})
@@ -159,6 +159,7 @@ const RootContainer = ({ company, employees, locationId }) => {
 	const handleSubmit = async () => {
 		let customerId = (activeCustomer || {}).id
 
+		console.log(state.appointment)
 		if (!customerId) {
 			const { data } = await findOrCreateCustomer({
 				variables: {
@@ -263,20 +264,50 @@ const RootContainer = ({ company, employees, locationId }) => {
 
 				<ServiceSelector
 					services={services}
-					selectedServices={state.appointment.services}
+					appointmentServices={state.appointment.services}
+					selectedServices={state.selectedServiceIds}
+					quantities={state.selectedServicesCount}
+					onIncreaseQuantity={({ id }) => {
+						setState(prev =>
+							produce(prev, draft => {
+								const index = prev.appointment.services.findIndex(
+									service => Number(service.id) === Number(id)
+								)
+
+								draft.appointment.services[index].quantity++
+								draft.selectedServicesCount[id]++
+							})
+						)
+					}}
+					onDecreaseQuantity={({ id }) => {
+						setState(prev =>
+							produce(prev, draft => {
+								const index = prev.appointment.services.findIndex(
+									service => Number(service.id) === Number(id)
+								)
+
+								if (prev.selectedServicesCount[id] !== 1) {
+									draft.appointment.services[index].quantity--
+									draft.selectedServicesCount[id]--
+								}
+							})
+						)
+					}}
 					onSelect={({ id }) => {
 						setState(prevState => {
 							return produce(prevState, draftState => {
 								const indexOfExisting = prevState.appointment.services.findIndex(
-									cid => Number(cid) === Number(id)
+									service => Number(service.id) === Number(id)
 								)
-
-								console.log(indexOfExisting)
 
 								if (indexOfExisting >= 0) {
 									draftState.appointment.services.splice(indexOfExisting, 1)
+									delete draftState.selectedServiceIds[id]
+									delete draftState.selectedServicesCount[id]
 								} else {
-									draftState.appointment.services.push(id)
+									draftState.appointment.services.push({ id, quantity: 1 })
+									draftState.selectedServiceIds[id] = true
+									draftState.selectedServicesCount[id] = 1
 								}
 							})
 						})

@@ -1,5 +1,6 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
+import { IoIosArrowUp, IoIosArrowDown } from 'react-icons/io'
 
 const Container = styled('div')`
 	position: relative;
@@ -12,7 +13,67 @@ const Container = styled('div')`
 	padding-left: 60px;
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	max-height: 150px;
+
+	.quantity {
+		padding: 10px;
+		position: absolute;
+		background: rgba(37, 43, 50, 1);
+		top: 0;
+		right: 0;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		color: white;
+	}
+
+	.quantity-title {
+		padding: 4px;
+		font-size: 12px;
+		opacity: 0.4;
+		margin-bottom: 4px;
+	}
+
+	.quantity-btn {
+		width: 60px;
+
+		.up {
+			border-top-left-radius: 8px;
+			border-top-right-radius: 8px;
+			border: 1px solid rgba(26, 30, 33, 1);
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			cursor: pointer;
+		}
+		.count {
+			font-size: 18px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-left: 1px solid rgba(26, 30, 33, 1);
+			border-right: 1px solid rgba(26, 30, 33, 1);
+			height: 24px;
+			background: rgba(26, 30, 33, 1);
+		}
+
+		.down {
+			border-bottom-left-radius: 8px;
+			border-bottom-right-radius: 8px;
+			border: 1px solid rgba(26, 30, 33, 1);
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			cursor: pointer;
+		}
+	}
 
 	&:before {
 		position: absolute;
@@ -55,7 +116,7 @@ const Container = styled('div')`
 	}
 `
 
-const ServiceCard = ({ selected, service, onClick }) => {
+const ServiceCard = ({ quantity, selected, service, onClick, onIncreaseQuantity, onDecreaseQuantity }) => {
 	return (
 		<Container selected={selected} onClick={onClick}>
 			<div>
@@ -65,6 +126,36 @@ const ServiceCard = ({ selected, service, onClick }) => {
 					{service.sources[0].duration > 0 && <span> - {service.sources[0].duration} minutes</span>}
 				</p>
 			</div>
+
+			{selected && (
+				<div className="quantity">
+					<span className="quantity-title">Quantity</span>
+
+					<div className="quantity-btn">
+						<div
+							className="up"
+							onClick={e => {
+								e.stopPropagation()
+								onIncreaseQuantity()
+							}}
+						>
+							<IoIosArrowUp />
+						</div>
+
+						<div className="count">{quantity}</div>
+
+						<div
+							className="down"
+							onClick={e => {
+								e.stopPropagation()
+								onDecreaseQuantity()
+							}}
+						>
+							<IoIosArrowDown />
+						</div>
+					</div>
+				</div>
+			)}
 		</Container>
 	)
 }

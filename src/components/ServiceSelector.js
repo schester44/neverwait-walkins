@@ -13,16 +13,26 @@ const Wrapper = styled('div')`
 	padding-bottom: 150px;
 `
 
-const ServiceSelector = ({ selectedServices, services, onSelect }) => {
+const ServiceSelector = ({
+	selectedServices,
+	services,
+	onSelect,
+	onIncreaseQuantity,
+	onDecreaseQuantity,
+	quantities
+}) => {
 	return (
 		<Wrapper>
 			{services.map(service => {
-				const selected = selectedServices.includes(service.id)
+				const selected = selectedServices[service.id]
 
 				return (
 					<Service
+						quantity={quantities[service.id]}
 						key={`service-${service.id}`}
 						onClick={() => onSelect(service)}
+						onIncreaseQuantity={() => onIncreaseQuantity(service)}
+						onDecreaseQuantity={() => onDecreaseQuantity(service)}
 						service={service}
 						selected={selected}
 					/>
@@ -32,6 +42,12 @@ const ServiceSelector = ({ selectedServices, services, onSelect }) => {
 	)
 }
 
-const areEqual = (prevProps, nextProps) => prevProps.selectedServices.length === nextProps.selectedServices.length
+const areEqual = (prev, next) => {
+	return (
+		prev.selectedServices === next.selectedServices &&
+		prev.appointmentServices === next.appointmentServices &&
+		prev.quantities === next.quantities
+	)
+}
 
 export default React.memo(ServiceSelector, areEqual)

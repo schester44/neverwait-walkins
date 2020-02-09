@@ -6,6 +6,7 @@ import { ApolloLink, split } from 'apollo-link'
 import { getMainDefinition } from 'apollo-utilities'
 import config from './config'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { notify } from 'react-notify-toast'
 
 const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 	if (networkError && networkError.result && networkError.result.errors) {
@@ -14,8 +15,9 @@ const onErrorLink = onError(({ graphQLErrors, networkError }) => {
 
 	if (graphQLErrors) {
 		graphQLErrors.forEach(error => {
+			notify.show(error.message, 'error', 7000)
 			// Only remove the token adn refresh the screen back to the auth screen if we're not already on the auth screen
-			if (error.name === 'AuthenticationError' || error.data.INVALID_SUBSCRIPTION) {
+			if (error.name === 'AuthenticationError' || error.data?.INVALID_SUBSCRIPTION) {
 				localStorage.removeItem('nw-walkin-sess')
 
 				if (window.location.pathname !== '/auth') {
