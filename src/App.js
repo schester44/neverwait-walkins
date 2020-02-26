@@ -55,22 +55,22 @@ const App = () => {
 				locationId: location.id
 			},
 			updateQuery: (previousQueryResult, { subscriptionData }) => {
-				if (!subscriptionData.data.AppointmentsChange?.appointment) {
-					return
-				}
+				console.log(subscriptionData.data?.SchedulingChange)
+				if (!subscriptionData.data?.SchedulingChange) return
 
-				const { appointment, employeeId, isNewRecord } = subscriptionData.data.AppointmentsChange
+				const { payload, action, employeeId } = subscriptionData.data.SchedulingChange
+				const { appointment, blockedTime } = payload
 
-				const isDeleted =
-					appointment.status === 'deleted' ||
-					appointment.status === 'canceled' ||
-					appointment.status === 'noshow'
+				const isDeleted = appointment
+					? appointment.status === 'deleted' ||
+					  appointment.status === 'canceled' ||
+					  appointment.status === 'noshow'
+					: action === 'DELETED'
 
 				// No need to do anything since Apollo handles updates
-				if (!isDeleted && !isNewRecord) {
-					return previousQueryResult
-				}
+				if (action === 'UPDATED' && !isDeleted) return
 
+				console.log(action)
 				return produce(previousQueryResult, draftState => {
 					const indexOfEmployee = draftState.location.employees.findIndex(
 						employee => Number(employee.id) === Number(employeeId)
@@ -79,15 +79,30 @@ const App = () => {
 					if (indexOfEmployee === -1) return draftState
 
 					const appointments = draftState.location.employees[indexOfEmployee].appointments
+					const blockedTimes = draftState.location.employees[indexOfEmployee].blockedTime
 
-					if (isDeleted) {
-						const indexOfDeletedAppointment = appointments.findIndex(
-							appt => Number(appt.id) === Number(appointment.id)
-						)
+					if (appointment) {
+						if (isDeleted) {
+							const indexOfDeletedAppointment = appointments.findIndex(
+								appt => Number(appt.id) === Number(appointment.id)
+							)
 
-						appointments.splice(indexOfDeletedAppointment, 1)
-					} else {
-						appointments.push(appointment)
+							appointments.splice(indexOfDeletedAppointment, 1)
+						} else {
+							appointments.push(appointment)
+						}
+					}
+
+					if (blockedTime) {
+						if (isDeleted) {
+							const indexOfDeletedBlockedTime = blockedTimes.findIndex(
+								({ id }) => Number(id) === Number(blockedTime.id)
+							)
+
+							blockedTimes.splice(indexOfDeletedBlockedTime, 1)
+						} else {
+							blockedTimes.push(blockedTime)
+						}
 					}
 				})
 			}
