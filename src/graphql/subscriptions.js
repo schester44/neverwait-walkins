@@ -18,9 +18,6 @@ export const appointmentsSubscription = gql`
 					id
 					startTime
 					endTime
-					locationId
-					employeeId
-					description
 				}
 			}
 		}

@@ -41,9 +41,6 @@ export const locationDataQuery = gql`
 					id
 					startTime
 					endTime
-					locationId
-					employeeId
-					description
 				}
 				appointments(
 					input: {
