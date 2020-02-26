@@ -55,7 +55,6 @@ const App = () => {
 				locationId: location.id
 			},
 			updateQuery: (previousQueryResult, { subscriptionData }) => {
-				console.log(subscriptionData.data?.SchedulingChange)
 				if (!subscriptionData.data?.SchedulingChange) return
 
 				const { payload, action, employeeId } = subscriptionData.data.SchedulingChange
@@ -70,7 +69,6 @@ const App = () => {
 				// No need to do anything since Apollo handles updates
 				if (action === 'UPDATED' && !isDeleted) return
 
-				console.log(action)
 				return produce(previousQueryResult, draftState => {
 					const indexOfEmployee = draftState.location.employees.findIndex(
 						employee => Number(employee.id) === Number(employeeId)
@@ -79,7 +77,7 @@ const App = () => {
 					if (indexOfEmployee === -1) return draftState
 
 					const appointments = draftState.location.employees[indexOfEmployee].appointments
-					const blockedTimes = draftState.location.employees[indexOfEmployee].blockedTime
+					const blockedTimes = draftState.location.employees[indexOfEmployee].blockedTimes
 
 					if (appointment) {
 						if (isDeleted) {

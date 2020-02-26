@@ -159,7 +159,6 @@ const RootContainer = ({ company, employees, locationId }) => {
 	const handleSubmit = async () => {
 		let customerId = (activeCustomer || {}).id
 
-		console.log(state.appointment)
 		if (!customerId) {
 			const { data } = await findOrCreateCustomer({
 				variables: {

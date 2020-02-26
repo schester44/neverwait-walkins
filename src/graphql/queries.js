@@ -37,6 +37,14 @@ export const locationDataQuery = gql`
 						duration
 					}
 				}
+				blockedTimes {
+					id
+					startTime
+					endTime
+					locationId
+					employeeId
+					description
+				}
 				appointments(
 					input: {
 						where: {
