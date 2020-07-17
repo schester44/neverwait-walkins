@@ -11,6 +11,7 @@ export const locationDataQuery = gql`
 			settings {
 				walkins {
 					isFirstAvailableButtonEnabled
+					confirmationText
 				}
 			}
 

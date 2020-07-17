@@ -86,10 +86,10 @@ const vowels = {
 	e: true,
 	i: true,
 	o: true,
-	u: true
+	u: true,
 }
 
-const Finished = ({ location: { company } }) => {
+const Finished = ({ location: { company, settings } }) => {
 	console.log('[FinishedView]')
 
 	const history = useHistory()
@@ -131,13 +131,15 @@ const Finished = ({ location: { company } }) => {
 
 					<h1 style={{ margin: '50px 0', color: 'white' }}>
 						You can expect to be in the chair around:
-						<span style={{ color: 'rgba(242, 209, 116, 1)' }}> {format(appointment.startTime, 'h:mma')}.</span>
+						<span style={{ color: 'rgba(242, 209, 116, 1)' }}>
+							{' '}
+							{format(appointment.startTime, 'h:mma')}.
+						</span>
 					</h1>
 
-					<p style={{ lineHeight: 1.3 }}>
-						Feel free to leave the shop and come back within 20 minutes of your scheduled appointment time, just leave a
-						$10 refundable deposit at the front desk.
-					</p>
+					{settings.walkins.confirmationText && (
+						<p style={{ lineHeight: 1.3 }}>{settings.walkins.confirmationText}</p>
+					)}
 				</div>
 
 				<Link to="/">
